@@ -3,460 +3,122 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>2D Valorant Strategy Simulator</title>
-    <style>
-      :root {
-        --bg: #0b0f14;
-        --panel: #111827;
-        --accent: #f59e0b;
-        --text: #e5e7eb;
-        --muted: #94a3b8;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: "Space Grotesk", system-ui, sans-serif;
-        background: radial-gradient(1200px 600px at 20% 0%, #1f2937 0%, #0b0f14 55%);
-        color: var(--text);
-        display: flex;
-        min-height: 100vh;
-      }
-      .sidebar {
-        width: 260px;
-        padding: 20px;
-        background: linear-gradient(180deg, #0f172a 0%, #0b0f14 100%);
-        border-right: 1px solid #1f2937;
-      }
-      .title {
-        font-size: 18px;
-        letter-spacing: 0.5px;
-        margin: 0 0 12px;
-      }
-      .muted { color: var(--muted); font-size: 12px; }
-      .toolbox {
-        margin-top: 16px;
-        display: grid;
-        gap: 12px;
-      }
-      .tool {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 10px;
-        cursor: grab;
-        user-select: none;
-      }
-      .tool:active { cursor: grabbing; }
-      .tool canvas {
-        background: #0b1220;
-        border-radius: 8px;
-        border: 1px solid #1f2937;
-      }
-      .actions {
-        margin-top: 18px;
-        display: grid;
-        gap: 10px;
-      }
-      button {
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid #1f2937;
-        background: #0f172a;
-        color: var(--text);
-        font-weight: 600;
-        cursor: pointer;
-      }
-      button:hover { border-color: #334155; }
-      #output {
-        margin-top: 12px;
-        padding: 10px;
-        border-radius: 8px;
-        background: #0b1220;
-        border: 1px solid #1f2937;
-        font-size: 12px;
-        white-space: pre-wrap;
-        max-height: 240px;
-        overflow: auto;
-      }
-      .canvas-wrap {
-        flex: 1;
-        display: grid;
-        place-items: center;
-        padding: 20px;
-      }
-      #mapCanvas {
-        width: min(1200px, 95vw);
-        height: auto;
-        border-radius: 14px;
-        border: 1px solid #1f2937;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-        background: #0b1220;
-      }
-      .legend {
-        margin-top: 12px;
-        display: grid;
-        gap: 6px;
-        font-size: 12px;
-      }
-      .dot {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 6px;
-      }
-    </style>
+    <title>FPS Strat Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <aside class="sidebar">
-      <h1 class="title">Ascent Map Viewer</h1>
-      <div class="muted">Drag tools onto the map. Drop to save coordinates.</div>
-
-      <div class="toolbox">
-        <div class="tool" data-tool="player">
-          <canvas width="36" height="36"></canvas>
-          <div>
-            <div>Player</div>
-            <div class="muted">Circle icon</div>
+    <div class="app">
+      <aside class="sidebar left">
+        <section class="panel map-select">
+          <div class="panel-title">Map Selection</div>
+          <div class="map-preview placeholder-asset">
+            <span>X</span>
           </div>
-        </div>
-        <div class="tool" data-tool="smoke">
-          <canvas width="36" height="36"></canvas>
-          <div>
-            <div>Smoke</div>
-            <div class="muted">Radius utility</div>
+          <div class="map-info">
+            <div class="map-name">BIND</div>
+            <div class="map-toggle">
+              <button class="toggle active">Attack</button>
+              <button class="toggle">Defend</button>
+            </div>
           </div>
-        </div>
-        <div class="tool" data-tool="flash">
-          <canvas width="36" height="36"></canvas>
-          <div>
-            <div>Flash</div>
-            <div class="muted">Cone utility</div>
+        </section>
+
+        <section class="panel sequence">
+          <div class="panel-title">Sequence</div>
+          <div class="sequence-grid">
+            <button class="seq">1</button>
+            <button class="seq">2</button>
+            <button class="seq">3</button>
+            <button class="seq">4</button>
+            <button class="seq">5</button>
+            <button class="seq">6</button>
+            <button class="seq">7</button>
+            <button class="seq">8</button>
+            <button class="seq">9</button>
+            <button class="seq">10</button>
           </div>
+          <div class="delete-controls">
+            <button class="danger">Delete Step</button>
+            <button class="ghost">Clear All</button>
+          </div>
+        </section>
+
+        <section class="panel tools">
+          <div class="panel-title">Tools</div>
+          <div class="tools-grid">
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+            <button class="tool-btn placeholder-asset"><span>X</span></button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="center">
+        <div class="map-canvas placeholder-asset">
+          <span>X</span>
         </div>
-      </div>
+      </main>
 
-      <div class="actions">
-        <button id="startBtn">Start Simulation</button>
-        <button id="playBtn">Play</button>
-        <button id="clearBtn">Clear Placements</button>
-      </div>
+      <aside class="sidebar right">
+        <section class="panel strategies">
+          <div class="panel-title">Strategies</div>
+          <button class="primary">Add Strategy</button>
+          <div class="strategy-list">
+            <div class="strategy-item">Default Setup</div>
+            <div class="strategy-item">A Split</div>
+            <div class="strategy-item">B Execute</div>
+          </div>
+        </section>
+      </aside>
 
-      <div class="legend">
-        <div><span class="dot" style="background:#22d3ee"></span>Player</div>
-        <div><span class="dot" style="background:#f59e0b"></span>Smoke</div>
-        <div><span class="dot" style="background:#f43f5e"></span>Flash</div>
-      </div>
-
-      <pre id="output">{
-  "status": "waiting"
-}</pre>
-    </aside>
-
-    <main class="canvas-wrap">
-      <canvas id="mapCanvas" width="1200" height="800"></canvas>
-    </main>
-
-    <script>
-      const canvas = document.getElementById("mapCanvas");
-      const ctx = canvas.getContext("2d");
-      const output = document.getElementById("output");
-      const startBtn = document.getElementById("startBtn");
-      const playBtn = document.getElementById("playBtn");
-      const clearBtn = document.getElementById("clearBtn");
-
-      const mapSvg = `
-        <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
-          <defs>
-            <linearGradient id='g' x1='0' x2='1' y1='0' y2='1'>
-              <stop offset='0%' stop-color='#1f2937'/>
-              <stop offset='100%' stop-color='#0b1220'/>
-            </linearGradient>
-          </defs>
-          <rect width='1200' height='800' fill='url(#g)'/>
-          <rect x='80' y='80' width='1040' height='640' fill='none' stroke='#334155' stroke-width='4'/>
-          <rect x='300' y='200' width='220' height='140' fill='#111827' stroke='#475569' stroke-width='2'/>
-          <rect x='700' y='450' width='240' height='160' fill='#111827' stroke='#475569' stroke-width='2'/>
-          <circle cx='380' cy='270' r='30' fill='none' stroke='#94a3b8' stroke-width='2'/>
-          <circle cx='820' cy='520' r='30' fill='none' stroke='#94a3b8' stroke-width='2'/>
-          <text x='90' y='50' fill='#e2e8f0' font-size='18'>Ascent Placeholder Map</text>
-        </svg>
-      `;
-
-      const mapImg = new Image();
-      mapImg.src = "data:image/svg+xml;utf8," + encodeURIComponent(mapSvg);
-
-      const icons = [];
-      const placements = [];
-      let lastSimResult = null;
-      let playbackTimer = null;
-
-      let dragging = null;
-      let dragOffset = { x: 0, y: 0 };
-
-      const toolDefs = {
-        player: { radius: 12, color: "#22d3ee" },
-        smoke: { radius: 35, color: "#f59e0b" },
-        flash: { radius: 28, color: "#f43f5e", coneAngle: Math.PI / 2 }
-      };
-
-      function drawToolCanvases() {
-        document.querySelectorAll(".tool").forEach((tool) => {
-          const type = tool.dataset.tool;
-          const c = tool.querySelector("canvas");
-          const tctx = c.getContext("2d");
-          tctx.clearRect(0, 0, c.width, c.height);
-          renderIcon(tctx, type, c.width / 2, c.height / 2, true);
-        });
-      }
-
-      function renderIcon(context, type, x, y, compact = false) {
-        const def = toolDefs[type];
-        if (!def) return;
-        context.save();
-        context.translate(x, y);
-        if (type === "player") {
-          context.fillStyle = def.color;
-          context.beginPath();
-          context.arc(0, 0, compact ? 6 : def.radius, 0, Math.PI * 2);
-          context.fill();
-          context.strokeStyle = "rgba(255,255,255,0.4)";
-          context.lineWidth = 2;
-          context.stroke();
-        } else if (type === "smoke") {
-          context.fillStyle = def.color + "33";
-          context.strokeStyle = def.color;
-          context.lineWidth = 2;
-          context.beginPath();
-          context.arc(0, 0, compact ? 10 : def.radius, 0, Math.PI * 2);
-          context.fill();
-          context.stroke();
-        } else if (type === "flash") {
-          const radius = compact ? 12 : def.radius;
-          const angle = def.coneAngle || (Math.PI / 2);
-          context.fillStyle = def.color + "33";
-          context.strokeStyle = def.color;
-          context.lineWidth = 2;
-          context.beginPath();
-          context.moveTo(0, 0);
-          context.arc(0, 0, radius, -angle / 2, angle / 2);
-          context.closePath();
-          context.fill();
-          context.stroke();
-          context.fillStyle = def.color;
-          context.beginPath();
-          context.arc(0, 0, compact ? 4 : 6, 0, Math.PI * 2);
-          context.fill();
-        }
-        context.restore();
-      }
-
-      function drawScene() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (mapImg.complete) {
-          ctx.drawImage(mapImg, 0, 0, canvas.width, canvas.height);
-        }
-
-        icons.forEach((icon) => {
-          renderIcon(ctx, icon.type, icon.x, icon.y);
-        });
-      }
-
-      function drawPlaybackFrame(tick, sim) {
-        drawScene();
-
-        const dead = new Set();
-        const fights = [];
-        const utilitiesAtTick = [];
-
-        sim.events.forEach((ev) => {
-          if (ev.tick > tick) return;
-          if (ev.type === "kill" || ev.type === "molly_kill") {
-            dead.add(ev.target);
-          }
-          if (ev.type === "kill") {
-            fights.push(ev);
-          }
-          if (ev.type === "blind" || ev.type === "molly_kill") {
-            utilitiesAtTick.push(ev);
-          }
-        });
-
-        utilitiesAtTick.forEach((ev) => {
-          const util = placements.find((p) => p.id === ev.actor);
-          if (!util) return;
-          if (util.type === "smoke" || util.type === "molly") {
-            ctx.strokeStyle = "rgba(148,163,184,0.6)";
-            ctx.fillStyle = "rgba(148,163,184,0.15)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(util.x, util.y, util.type === "smoke" ? 40 : 30, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-          } else if (util.type === "flash") {
-            ctx.strokeStyle = "rgba(226,232,240,0.7)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(util.x, util.y);
-            ctx.arc(util.x, util.y, 35, -Math.PI / 4, Math.PI / 4);
-            ctx.stroke();
-          }
-        });
-
-        fights.forEach((ev) => {
-          const attacker = placements.find((p) => p.id === ev.actor);
-          const target = placements.find((p) => p.id === ev.target);
-          if (!attacker || !target) return;
-          ctx.strokeStyle = "rgba(248,113,113,0.8)";
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(attacker.x, attacker.y);
-          ctx.lineTo(target.x, target.y);
-          ctx.stroke();
-        });
-
-        placements
-          .filter((p) => p.type === "player")
-          .forEach((p) => {
-            if (!dead.has(p.id)) return;
-            ctx.strokeStyle = "#f87171";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(p.x - 10, p.y - 10);
-            ctx.lineTo(p.x + 10, p.y + 10);
-            ctx.moveTo(p.x + 10, p.y - 10);
-            ctx.lineTo(p.x - 10, p.y + 10);
-            ctx.stroke();
-          });
-      }
-
-      function addIcon(type, x, y) {
-        const id = `${type}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-        const icon = { id, type, x, y };
-        icons.push(icon);
-        dragging = icon;
-        dragOffset = { x: 0, y: 0 };
-        drawScene();
-      }
-
-      function hitTest(x, y) {
-        for (let i = icons.length - 1; i >= 0; i--) {
-          const icon = icons[i];
-          const def = toolDefs[icon.type];
-          const dx = x - icon.x;
-          const dy = y - icon.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist <= def.radius) return icon;
-        }
-        return null;
-      }
-
-      function updatePlacements(icon) {
-        const idx = placements.findIndex((p) => p.id === icon.id);
-        const record = { id: icon.id, type: icon.type, x: icon.x, y: icon.y };
-        if (idx === -1) placements.push(record);
-        else placements[idx] = record;
-      }
-
-      function canvasPos(evt) {
-        const rect = canvas.getBoundingClientRect();
-        return {
-          x: ((evt.clientX - rect.left) / rect.width) * canvas.width,
-          y: ((evt.clientY - rect.top) / rect.height) * canvas.height
-        };
-      }
-
-      canvas.addEventListener("pointerdown", (evt) => {
-        const pos = canvasPos(evt);
-        const target = hitTest(pos.x, pos.y);
-        if (target) {
-          dragging = target;
-          dragOffset = { x: pos.x - target.x, y: pos.y - target.y };
-        }
-      });
-
-      canvas.addEventListener("pointermove", (evt) => {
-        if (!dragging) return;
-        const pos = canvasPos(evt);
-        dragging.x = pos.x - dragOffset.x;
-        dragging.y = pos.y - dragOffset.y;
-        drawScene();
-      });
-
-      function endDrag() {
-        if (!dragging) return;
-        updatePlacements(dragging);
-        dragging = null;
-        drawScene();
-      }
-
-      canvas.addEventListener("pointerup", endDrag);
-      canvas.addEventListener("pointerleave", endDrag);
-
-      document.querySelectorAll(".tool").forEach((tool) => {
-        tool.addEventListener("pointerdown", (evt) => {
-          const type = tool.dataset.tool;
-          addIcon(type, canvas.width / 2, canvas.height / 2);
-        });
-      });
-
-      async function runSimulation() {
-        const payload = {
-          map: "Ascent",
-          created_at: new Date().toISOString(),
-          elo: "mid",
-          weapon: "rifle",
-          players: placements.filter((p) => p.type === "player"),
-          utilities: placements.filter((p) => p.type !== "player")
-        };
-        output.textContent = JSON.stringify(payload, null, 2);
-        const res = await fetch("http://localhost:8000/simulate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        lastSimResult = await res.json();
-        output.textContent = JSON.stringify(lastSimResult, null, 2);
-      }
-
-      startBtn.addEventListener("click", () => {
-        runSimulation();
-      });
-
-      playBtn.addEventListener("click", () => {
-        if (!lastSimResult) return;
-        if (playbackTimer) clearInterval(playbackTimer);
-        let tick = 0;
-        playbackTimer = setInterval(() => {
-          tick += 1;
-          drawPlaybackFrame(tick, lastSimResult);
-          if (tick >= lastSimResult.ticks) {
-            clearInterval(playbackTimer);
-            playbackTimer = null;
-          }
-        }, 1000 / 10);
-      });
-
-      clearBtn.addEventListener("click", () => {
-        icons.length = 0;
-        placements.length = 0;
-        lastSimResult = null;
-        output.textContent = JSON.stringify({ status: "cleared" }, null, 2);
-        drawScene();
-      });
-
-      mapImg.onload = () => {
-        drawToolCanvases();
-        drawScene();
-      };
-
-      if (mapImg.complete) {
-        drawToolCanvases();
-        drawScene();
-      }
-    </script>
+      <section class="bottom-bar">
+        <div class="agent-filters">
+          <button class="filter active">All</button>
+          <button class="filter">On Map</button>
+          <button class="filter">Ally</button>
+        </div>
+        <div class="agent-scroller">
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+          <div class="agent-card placeholder-asset"><span>X</span></div>
+        </div>
+      </section>
+    </div>
   </body>
 </html>
