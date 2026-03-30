@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/map.schema.json",
+  "title": "Map Schema (Ascent)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "map"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema or data version identifier."
+    },
+    "map": { "$ref": "#/$defs/map" }
+  },
+  "$defs": {
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "polygon": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/point" },
+      "description": "Clockwise or counterclockwise polygon points."
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outer", "holes"],
+      "properties": {
+        "outer": { "$ref": "#/$defs/polygon" },
+        "holes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/polygon" }
+        }
+      }
+    },
+    "plantZone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "site", "is_default", "area"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_\\-]+$"
+        },
+        "site": {
+          "type": "string",
+          "enum": ["A", "B"]
+        },
+        "is_default": {
+          "type": "boolean",
+          "description": "Marks the canonical/default plant area for this site."
+        },
+        "area": { "$ref": "#/$defs/polygon" }
+      }
+    },
+    "chokePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "coord"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_\\-]+$"
+        },
+        "name": { "type": "string" },
+        "coord": { "$ref": "#/$defs/point" }
+      }
+    },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "scale_m_per_unit",
+        "boundaries",
+        "plant_zones",
+        "choke_points"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ascent$"
+        },
+        "name": {
+          "type": "string",
+          "const": "Ascent"
+        },
+        "scale_m_per_unit": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Conversion factor from map units to meters."
+        },
+        "boundaries": { "$ref": "#/$defs/boundary" },
+        "plant_zones": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/plantZone" }
+        },
+        "choke_points": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/chokePoint" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

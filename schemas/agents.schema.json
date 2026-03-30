@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/agents.schema.json",
+  "title": "Agents Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "agents"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema or data version identifier."
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/agent" }
+    }
+  },
+  "$defs": {
+    "utility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "type", "duration_s", "radius_m"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_\\-]+$"
+        },
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["blind", "smoke", "molly", "stun", "reveal", "wall", "trap", "mobility"]
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 0,
+          "description": "How long the utility persists."
+        },
+        "radius_m": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Effective radius or area of effect."
+        },
+        "charges": { "type": "integer", "minimum": 0 },
+        "cost": { "type": "integer", "minimum": 0 },
+        "cooldown_s": { "type": "number", "minimum": 0 },
+        "is_signature": { "type": "boolean" },
+        "can_be_redeployed": { "type": "boolean" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "role", "bio", "utilities"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_\\-]+$"
+        },
+        "name": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["duelist", "initiator", "controller", "sentinel"]
+        },
+        "bio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["origin", "description"],
+          "properties": {
+            "origin": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        },
+        "hitbox": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["height_m", "width_m"],
+          "properties": {
+            "height_m": { "type": "number", "minimum": 0 },
+            "width_m": { "type": "number", "minimum": 0 }
+          }
+        },
+        "utilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/utility" }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
