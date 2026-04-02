@@ -90,6 +90,7 @@
           <button class="icon-btn danger">🗑</button>
         </div>
         <div class="map-wrapper" id="map-canvas">
+          <button class="map-trash" id="map-trash" title="Delete token">🗑</button>
           <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
         </div>
       </main>
@@ -150,6 +151,7 @@
     </div>
     <script>
       const mapCanvas = document.getElementById("map-canvas");
+      const mapTrash = document.getElementById("map-trash");
       const agentIcons = document.querySelectorAll(".agent-icon");
 
       let activeToken = null;
@@ -206,11 +208,32 @@
 
         activeToken.style.left = `${clampedX}px`;
         activeToken.style.top = `${clampedY}px`;
+
+        const trashRect = mapTrash.getBoundingClientRect();
+        const isOverTrash =
+          event.clientX >= trashRect.left &&
+          event.clientX <= trashRect.right &&
+          event.clientY >= trashRect.top &&
+          event.clientY <= trashRect.bottom;
+        mapTrash.classList.toggle("active", isOverTrash);
       });
 
       document.addEventListener("mouseup", () => {
         if (!activeToken) return;
-        activeToken.style.cursor = "grab";
+        const trashRect = mapTrash.getBoundingClientRect();
+        const tokenRect = activeToken.getBoundingClientRect();
+        const overlaps =
+          tokenRect.left < trashRect.right &&
+          tokenRect.right > trashRect.left &&
+          tokenRect.top < trashRect.bottom &&
+          tokenRect.bottom > trashRect.top;
+
+        if (overlaps) {
+          activeToken.remove();
+        } else {
+          activeToken.style.cursor = "grab";
+        }
+        mapTrash.classList.remove("active");
         activeToken = null;
       });
     </script>
