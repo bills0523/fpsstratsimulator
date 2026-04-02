@@ -13,103 +13,140 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="app">
-      <aside class="sidebar left">
-        <section class="panel map-select">
-          <div class="panel-title">Map Selection</div>
-          <div class="map-preview placeholder-asset">
-            <span>X</span>
-          </div>
-          <div class="map-info">
-            <div class="map-name">BIND</div>
+    <div id="app-container">
+      <aside class="left-sidebar">
+        <section class="sidebar-section">
+          <div class="section-title">Map Selection</div>
+          <div class="map-card">
+            <div class="map-preview">BIND</div>
             <div class="map-toggle">
               <button class="toggle active">Attack</button>
               <button class="toggle">Defend</button>
             </div>
           </div>
         </section>
-      </aside>
 
-      <main class="center">
-        <!-- Map image should appear in the right-center of the UI. -->
-        <div class="map-canvas">
-          <img
-            class="map-image placeholder-asset"
-            src="assets/maps/Map Bind.png"
-            alt="Bind map"
-          />
-        </div>
+        <section class="sidebar-section">
+          <div class="section-title">Sequence</div>
+          <button class="secondary wide">SEQ. Tutorial</button>
+          <div class="sequence-grid">
+            <button class="seq">1</button>
+            <button class="seq">2</button>
+            <button class="seq">3</button>
+            <button class="seq">4</button>
+            <button class="seq">5</button>
+            <button class="seq">6</button>
+            <button class="seq">7</button>
+            <button class="seq">8</button>
+            <button class="seq">9</button>
+            <button class="seq">10</button>
+          </div>
+          <button class="secondary wide">Audio</button>
+        </section>
 
-        <section class="panel tools">
-          <div class="panel-title">Tools</div>
-          <div class="tools-grid">
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
-            <button class="tool-btn placeholder-asset"><span>X</span></button>
+        <section class="sidebar-section">
+          <div class="section-title">Delete</div>
+          <button class="danger wide">Everything</button>
+          <button class="secondary wide">Sequence Step 1</button>
+          <div class="mini-icons">
+            <div class="mini-icon"></div>
+            <div class="mini-icon"></div>
+            <div class="mini-icon"></div>
+            <div class="mini-icon"></div>
           </div>
         </section>
 
-        <!-- Agent portraits should sit in the center-bottom of the UI. -->
-        <section class="agent-bar">
-          <div class="agent-filters">
+        <section class="sidebar-section">
+          <div class="section-title">Tools</div>
+          <div class="tools-grid">
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+            <button class="tool"></button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="center-map">
+        <div class="map-topbar">
+          <div class="topbar-left">
+            <button class="icon-btn">⚙</button>
+            <button class="icon-btn">💾</button>
+            <button class="icon-btn">📸</button>
+            <button class="icon-btn">🎥</button>
+            <button class="icon-btn">➕</button>
+          </div>
+          <button class="icon-btn danger">🗑</button>
+        </div>
+        <div class="map-wrapper">
+          <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
+        </div>
+      </main>
+
+      <aside class="right-sidebar">
+        <div class="right-header">Home</div>
+        <button class="primary wide">Add Strategy</button>
+      </aside>
+
+      <section class="bottom-bar">
+        <div class="bottom-left">
+          <div class="filter-row">
             <button class="filter active">All</button>
             <button class="filter">On Map</button>
             <button class="filter">Ally</button>
           </div>
-          <div class="agent-scroller">
-            <img class="agent-card placeholder-asset" src="assets/agents/astra.png" alt="Astra" />
-            <img class="agent-card placeholder-asset" src="assets/agents/breach.png" alt="Breach" />
-            <img class="agent-card placeholder-asset" src="assets/agents/brimstone.png" alt="Brimstone" />
-            <img class="agent-card placeholder-asset" src="assets/agents/chamber.png" alt="Chamber" />
-            <img class="agent-card placeholder-asset" src="assets/agents/clove.png" alt="Clove" />
-            <img class="agent-card placeholder-asset" src="assets/agents/cypher.png" alt="Cypher" />
-            <img class="agent-card placeholder-asset" src="assets/agents/deadlock.png" alt="Deadlock" />
-            <img class="agent-card placeholder-asset" src="assets/agents/fade.png" alt="Fade" />
-            <img class="agent-card placeholder-asset" src="assets/agents/gekko.png" alt="Gekko" />
-            <img class="agent-card placeholder-asset" src="assets/agents/harbor.png" alt="Harbor" />
-            <img class="agent-card placeholder-asset" src="assets/agents/iso.png" alt="Iso" />
-            <img class="agent-card placeholder-asset" src="assets/agents/jett.png" alt="Jett" />
-            <img class="agent-card placeholder-asset" src="assets/agents/kj.png" alt="Killjoy" />
-            <img class="agent-card placeholder-asset" src="assets/agents/ko.png" alt="KAY/O" />
-            <img class="agent-card placeholder-asset" src="assets/agents/mito.png" alt="Mito" />
-            <img class="agent-card placeholder-asset" src="assets/agents/neon.png" alt="Neon" />
-            <img class="agent-card placeholder-asset" src="assets/agents/omen.png" alt="Omen" />
-            <img class="agent-card placeholder-asset" src="assets/agents/pheonix.png" alt="Phoenix" />
-            <img class="agent-card placeholder-asset" src="assets/agents/raze.png" alt="Raze" />
-            <img class="agent-card placeholder-asset" src="assets/agents/reyna.png" alt="Reyna" />
-            <img class="agent-card placeholder-asset" src="assets/agents/sage.png" alt="Sage" />
-            <img class="agent-card placeholder-asset" src="assets/agents/skye.png" alt="Skye" />
-            <img class="agent-card placeholder-asset" src="assets/agents/sove.png" alt="Sova" />
-            <img class="agent-card placeholder-asset" src="assets/agents/tejo.png" alt="Tejo" />
-            <img class="agent-card placeholder-asset" src="assets/agents/veto.png" alt="Veto" />
-            <img class="agent-card placeholder-asset" src="assets/agents/viper.png" alt="Viper" />
-            <img class="agent-card placeholder-asset" src="assets/agents/vyse.png" alt="Vyse" />
-            <img class="agent-card placeholder-asset" src="assets/agents/waylay.png" alt="Waylay" />
-            <img class="agent-card placeholder-asset" src="assets/agents/yoru.png" alt="Yoru" />
+          <div class="filter-row">
+            <button class="filter">Favored</button>
+            <div class="mini-icons">
+              <div class="mini-icon"></div>
+              <div class="mini-icon"></div>
+              <div class="mini-icon"></div>
+            </div>
           </div>
-        </section>
-      </main>
-
-      <aside class="sidebar right">
-        <section class="panel strategies">
-          <div class="panel-title">Strategies</div>
-          <button class="primary">Add Strategy</button>
-          <div class="strategy-list">
-            <div class="strategy-item">Default Setup</div>
-            <div class="strategy-item">A Split</div>
-            <div class="strategy-item">B Execute</div>
-          </div>
-        </section>
-      </aside>
+        </div>
+        <div class="bottom-right">
+          <img src="assets/agents/astra.png" alt="Astra" class="agent-icon" />
+          <img src="assets/agents/breach.png" alt="Breach" class="agent-icon" />
+          <img src="assets/agents/brimstone.png" alt="Brimstone" class="agent-icon" />
+          <img src="assets/agents/chamber.png" alt="Chamber" class="agent-icon" />
+          <img src="assets/agents/clove.png" alt="Clove" class="agent-icon" />
+          <img src="assets/agents/cypher.png" alt="Cypher" class="agent-icon" />
+          <img src="assets/agents/deadlock.png" alt="Deadlock" class="agent-icon" />
+          <img src="assets/agents/fade.png" alt="Fade" class="agent-icon" />
+          <img src="assets/agents/gekko.png" alt="Gekko" class="agent-icon" />
+          <img src="assets/agents/harbor.png" alt="Harbor" class="agent-icon" />
+          <img src="assets/agents/iso.png" alt="Iso" class="agent-icon" />
+          <img src="assets/agents/jett.png" alt="Jett" class="agent-icon" />
+          <img src="assets/agents/kj.png" alt="Killjoy" class="agent-icon" />
+          <img src="assets/agents/ko.png" alt="KAY/O" class="agent-icon" />
+          <img src="assets/agents/mito.png" alt="Mito" class="agent-icon" />
+          <img src="assets/agents/neon.png" alt="Neon" class="agent-icon" />
+          <img src="assets/agents/omen.png" alt="Omen" class="agent-icon" />
+          <img src="assets/agents/pheonix.png" alt="Phoenix" class="agent-icon" />
+          <img src="assets/agents/raze.png" alt="Raze" class="agent-icon" />
+          <img src="assets/agents/reyna.png" alt="Reyna" class="agent-icon" />
+          <img src="assets/agents/sage.png" alt="Sage" class="agent-icon" />
+          <img src="assets/agents/skye.png" alt="Skye" class="agent-icon" />
+          <img src="assets/agents/sove.png" alt="Sova" class="agent-icon" />
+          <img src="assets/agents/tejo.png" alt="Tejo" class="agent-icon" />
+          <img src="assets/agents/veto.png" alt="Veto" class="agent-icon" />
+          <img src="assets/agents/viper.png" alt="Viper" class="agent-icon" />
+          <img src="assets/agents/vyse.png" alt="Vyse" class="agent-icon" />
+          <img src="assets/agents/waylay.png" alt="Waylay" class="agent-icon" />
+          <img src="assets/agents/yoru.png" alt="Yoru" class="agent-icon" />
+        </div>
+      </section>
     </div>
   </body>
 </html>
