@@ -1,12 +1,12 @@
 :root {
-  --bg: #0b141a;
-  --panel: #17212b;
-  --panel-2: #121a22;
-  --panel-dark: #0f171f;
-  --border: #23313c;
-  --text: #e8f0f6;
-  --muted: #b8c2cc;
-  --accent: #388d9c;
+  --bg: #141a16;
+  --panel: #1b241e;
+  --panel-2: #171f19;
+  --panel-dark: #121812;
+  --border: #273229;
+  --text: #eef4ef;
+  --muted: #b3bcb5;
+  --accent: #00ff88;
 }
 
 * {
@@ -93,7 +93,7 @@ body {
 }
 
 .map-preview {
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   border-radius: 12px;
   height: 130px;
@@ -112,7 +112,7 @@ body {
 }
 
 .toggle {
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   color: var(--text);
   padding: 8px;
@@ -126,7 +126,7 @@ body {
 }
 
 .secondary {
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 8px;
@@ -147,7 +147,7 @@ body {
 }
 
 .seq {
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 8px;
@@ -156,9 +156,9 @@ body {
 }
 
 .danger {
-  background: #2a1416;
-  border: 1px solid #4b1b1f;
-  color: #ff7a7a;
+  background: #2a1a16;
+  border: 1px solid #4b2a1f;
+  color: #ff9a7a;
   border-radius: 8px;
   padding: 8px;
   cursor: pointer;
@@ -172,7 +172,7 @@ body {
 .mini-icon {
   width: 26px;
   height: 26px;
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   border-radius: 6px;
 }
@@ -187,7 +187,7 @@ body {
   height: 36px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #0f1a22;
+  background: #151f18;
   cursor: pointer;
 }
 
@@ -206,7 +206,7 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
@@ -216,11 +216,12 @@ body {
   flex: 1;
   border: 1px solid var(--accent);
   border-radius: 14px;
-  background: #0f1a22;
+  background: #151f18;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .map-image {
@@ -236,7 +237,7 @@ body {
 }
 
 .primary {
-  background: #142029;
+  background: #1a241e;
   border: 1px solid var(--accent);
   color: var(--text);
   border-radius: 8px;
@@ -258,7 +259,7 @@ body {
 }
 
 .filter {
-  background: #0f1a22;
+  background: #151f18;
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 8px;
@@ -296,11 +297,11 @@ body {
 }
 
 .bottom-right::-webkit-scrollbar-track {
-  background: #0f1a22;
+  background: #151f18;
 }
 
 .bottom-right::-webkit-scrollbar-thumb {
-  background: #23313c;
+  background: #273229;
 }
 
 button:hover,
@@ -318,4 +319,14 @@ button:hover,
   .bottom-bar {
     grid-template-columns: 260px 1fr;
   }
+}
+.map-agent-token {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  cursor: grab;
+  user-select: none;
 }

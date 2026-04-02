@@ -89,7 +89,7 @@
           </div>
           <button class="icon-btn danger">🗑</button>
         </div>
-        <div class="map-wrapper">
+        <div class="map-wrapper" id="map-canvas">
           <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
         </div>
       </main>
@@ -148,5 +148,71 @@
         </div>
       </section>
     </div>
+    <script>
+      const mapCanvas = document.getElementById("map-canvas");
+      const agentIcons = document.querySelectorAll(".agent-icon");
+
+      let activeToken = null;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function createTokenFromIcon(icon) {
+        const token = document.createElement("img");
+        token.className = "map-agent-token";
+        token.src = icon.src;
+        token.alt = icon.alt || "Agent";
+        token.draggable = false;
+
+        const rect = mapCanvas.getBoundingClientRect();
+        const size = 40;
+        const left = (rect.width - size) / 2;
+        const top = (rect.height - size) / 2;
+
+        token.style.left = `${left}px`;
+        token.style.top = `${top}px`;
+
+        token.addEventListener("mousedown", (event) => {
+          activeToken = token;
+          const tokenRect = token.getBoundingClientRect();
+          dragOffsetX = event.clientX - tokenRect.left;
+          dragOffsetY = event.clientY - tokenRect.top;
+          token.style.cursor = "grabbing";
+        });
+
+        mapCanvas.appendChild(token);
+      }
+
+      agentIcons.forEach((icon) => {
+        icon.addEventListener("click", () => {
+          createTokenFromIcon(icon);
+        });
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (!activeToken) return;
+        const canvasRect = mapCanvas.getBoundingClientRect();
+        const tokenRect = activeToken.getBoundingClientRect();
+        const size = tokenRect.width;
+
+        const x = event.clientX - canvasRect.left - dragOffsetX;
+        const y = event.clientY - canvasRect.top - dragOffsetY;
+
+        const clampedX = clamp(x, 0, canvasRect.width - size);
+        const clampedY = clamp(y, 0, canvasRect.height - size);
+
+        activeToken.style.left = `${clampedX}px`;
+        activeToken.style.top = `${clampedY}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (!activeToken) return;
+        activeToken.style.cursor = "grab";
+        activeToken = null;
+      });
+    </script>
   </body>
 </html>
