@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/agents.schema.json",
   "title": "Agents Schema",
+  "$comment": "Validates agent roster JSON used by the simulator.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "agents"],
@@ -13,6 +14,7 @@
     "agents": {
       "type": "array",
       "minItems": 1,
+      "$comment": "List of agent definitions (playable characters).",
       "items": { "$ref": "#/$defs/agent" }
     }
   },
@@ -21,6 +23,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "name", "type", "duration_s", "radius_m"],
+      "$comment": "Reusable utility schema (smokes, flashes, etc.).",
       "properties": {
         "id": {
           "type": "string",
@@ -56,6 +59,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "name", "role", "bio", "utilities"],
+      "$comment": "Single agent entry with bio and utility list.",
       "properties": {
         "id": {
           "type": "string",

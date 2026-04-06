@@ -8,9 +8,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+# Simulation resolution and safety cap.
 TICKS_PER_SECOND = 10
 MAX_TICKS = 300
 
+# FastAPI application for the 2D simulation service.
 app = FastAPI(title="Valorant 2D Sim Backend")
 
 app.add_middleware(
@@ -23,6 +25,7 @@ app.add_middleware(
 
 
 class Icon(BaseModel):
+    """Serialized token/utility on the 2D map."""
     id: str
     type: str
     x: float
@@ -30,6 +33,7 @@ class Icon(BaseModel):
 
 
 class SimRequest(BaseModel):
+    """Request payload describing the map, players, and utilities to simulate."""
     map: str
     created_at: Optional[str] = None
     players: List[Icon]
@@ -40,6 +44,7 @@ class SimRequest(BaseModel):
 
 @dataclass
 class PlayerState:
+    """Runtime state for each player during the tick loop."""
     id: str
     x: float
     y: float
@@ -53,12 +58,14 @@ class PlayerState:
 
 @dataclass
 class UtilityState:
+    """Runtime state for placed utilities."""
     id: str
     type: str
     x: float
     y: float
 
 
+# Simplified weapon balance data used by the tick simulation.
 WEAPONS = {
     "rifle": {
         "base_damage": 35.0,
@@ -77,6 +84,7 @@ WEAPONS = {
     },
 }
 
+# Elo presets adjust accuracy, utility impact, and time-to-kill.
 ELO_PRESETS = {
     "low": {
         "randomness": 0.35,
@@ -97,20 +105,24 @@ ELO_PRESETS = {
 
 
 def distance(a: PlayerState, b: PlayerState) -> float:
+    """Euclidean distance between two players."""
     return hypot(a.x - b.x, a.y - b.y)
 
 
 def in_radius(px: float, py: float, ux: float, uy: float, radius: float) -> bool:
+    """True if point (px, py) is inside a utility radius."""
     return hypot(px - ux, py - uy) <= radius
 
 
 def get_weapon(name: Optional[str]) -> Dict[str, float]:
+    """Resolve a weapon by name, falling back to rifle."""
     if name and name in WEAPONS:
         return WEAPONS[name]
     return WEAPONS["rifle"]
 
 
 def compute_ttk_ticks(weapon: Dict[str, float], elo_cfg: Dict[str, float]) -> int:
+    """Convert weapon stats + elo tuning into a tick-based TTK."""
     base_damage = weapon["base_damage"]
     fire_rate = weapon["fire_rate_rps"]
     shots_to_kill = max(1, int((100 + base_damage - 1) // base_damage))
@@ -121,8 +133,10 @@ def compute_ttk_ticks(weapon: Dict[str, float], elo_cfg: Dict[str, float]) -> in
 
 @app.post("/simulate")
 def simulate(req: SimRequest):
+    """Main simulation endpoint: resolves utility effects and combat per tick."""
     elo_cfg = ELO_PRESETS.get(req.elo, ELO_PRESETS["mid"])
 
+    # Initialize runtime entities from the request payload.
     players = [
         PlayerState(id=p.id, x=p.x, y=p.y, weapon=req.weapon or "rifle")
         for p in req.players
@@ -135,6 +149,7 @@ def simulate(req: SimRequest):
     while tick < MAX_TICKS:
         tick += 1
 
+        # Track who is standing inside smoke for accuracy penalties.
         smoke_players = set()
 
         for u in utilities:
@@ -168,21 +183,25 @@ def simulate(req: SimRequest):
                                 "event": f"Tick {tick}: {p.id} eliminated by Molly",
                             })
 
+        # Decay blinded ticks each frame.
         for p in players:
             if p.blinded_ticks > 0:
                 p.blinded_ticks -= 1
 
+        # Stop early if one or fewer players remain.
         alive_players = [p for p in players if p.alive]
         if len(alive_players) <= 1:
             break
 
         for attacker in alive_players:
+            # Select the closest available target.
             targets = [p for p in alive_players if p.id != attacker.id]
             if not targets:
                 continue
             target = min(targets, key=lambda t: distance(attacker, t))
 
             weapon = get_weapon(attacker.weapon)
+            # Only engage if the target is within effective range.
             if distance(attacker, target) > weapon["range_m"]:
                 attacker.engaged_target = None
                 attacker.engaged_progress = 0
@@ -202,6 +221,7 @@ def simulate(req: SimRequest):
                 attacker.engaged_target = target.id
                 attacker.engaged_progress = 0
 
+            # Increment progress toward a kill based on TTK ticks.
             ttk_ticks = compute_ttk_ticks(weapon, elo_cfg)
             attacker.engaged_progress += 1
 

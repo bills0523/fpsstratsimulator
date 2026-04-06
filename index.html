@@ -4,16 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FPS Strat Simulator</title>
+    <!-- Preconnect to font hosts for faster font loading. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- UI typography for the simulator UI. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- App-specific layout and component styles. -->
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Root grid container for left/center/right panels and bottom bar. -->
     <div id="app-container">
+      <!-- Left sidebar: map selection, sequence controls, and tools. -->
       <aside class="left-sidebar">
         <section class="sidebar-section">
           <div class="section-title">Map Selection</div>
@@ -28,6 +33,7 @@
 
         <section class="sidebar-section">
           <div class="section-title">Sequence</div>
+          <!-- Placeholder buttons for scripted step sequencing. -->
           <button class="secondary wide">SEQ. Tutorial</button>
           <div class="sequence-grid">
             <button class="seq">1</button>
@@ -46,6 +52,7 @@
 
         <section class="sidebar-section">
           <div class="section-title">Delete</div>
+          <!-- Quick delete actions for strategy steps and assets. -->
           <button class="danger wide">Everything</button>
           <button class="secondary wide">Sequence Step 1</button>
           <div class="mini-icons">
@@ -58,6 +65,7 @@
 
         <section class="sidebar-section">
           <div class="section-title">Tools</div>
+          <!-- Toolbox area for placing utilities or tactical markers. -->
           <div class="tools-grid">
             <button class="tool"></button>
             <button class="tool"></button>
@@ -78,6 +86,7 @@
         </section>
       </aside>
 
+      <!-- Center workspace: top bar actions and map canvas. -->
       <main class="center-map">
         <div class="map-topbar">
           <div class="topbar-left">
@@ -89,17 +98,21 @@
           </div>
           <button class="icon-btn danger">🗑</button>
         </div>
+        <!-- Map canvas container used for token placement and dragging. -->
         <div class="map-wrapper" id="map-canvas">
+          <!-- Trash target: drop tokens here to delete them. -->
           <button class="map-trash" id="map-trash" title="Delete token">🗑</button>
           <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
         </div>
       </main>
 
+      <!-- Right sidebar: high-level actions or navigation. -->
       <aside class="right-sidebar">
         <div class="right-header">Home</div>
         <button class="primary wide">Add Strategy</button>
       </aside>
 
+      <!-- Bottom bar: filters plus draggable agent roster. -->
       <section class="bottom-bar">
         <div class="bottom-left">
           <div class="filter-row">
@@ -149,19 +162,66 @@
         </div>
       </section>
     </div>
+    <!-- Hover popover for agent utilities (positioned via JS). -->
+    <div class="utility-popover" id="utility-popover" aria-hidden="true"></div>
     <script>
+      // DOM handles used by the token placement + drag logic below.
       const mapCanvas = document.getElementById("map-canvas");
       const mapTrash = document.getElementById("map-trash");
       const agentIcons = document.querySelectorAll(".agent-icon");
+      const utilityPopover = document.getElementById("utility-popover");
 
+      // Drag state for the currently active map token.
       let activeToken = null;
       let dragOffsetX = 0;
       let dragOffsetY = 0;
+      let popoverHideTimer = null;
+      let activeAgentId = null;
 
+      // Utility category assignments.
+      const utilityCategories = {
+        sphere_smoke: ["clove", "viper", "brimstone", "omen", "harbor", "mito", "astra"],
+        line_smoke: ["viper", "harbor"],
+        flash: [
+          "reyna",
+          "yoru",
+          "skye",
+          "phoenix",
+          "pheonix",
+          "ko",
+          "gekko",
+          "breach",
+          "vyse",
+        ],
+      };
+
+      // Normalize and build a 4-slot utility list for a given agent.
+      function buildUtilitySlots(agentId) {
+        const slots = [];
+        if (utilityCategories.sphere_smoke.includes(agentId)) {
+          slots.push({ type: "sphere_smoke", label: "Sphere Smoke" });
+        }
+        if (utilityCategories.line_smoke.includes(agentId)) {
+          slots.push({ type: "line_smoke", label: "Line Smoke" });
+        }
+        if (utilityCategories.flash.includes(agentId)) {
+          slots.push({ type: "flash", label: "Flash" });
+        }
+        while (slots.length < 4) {
+          slots.push({ type: "placeholder_util", label: "Placeholder" });
+        }
+        return slots.slice(0, 4);
+      }
+
+      // Map agent id -> utilities (always 4 items).
+      const agentUtilityMap = {};
+
+      // Keep token movement inside the map canvas bounds.
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
 
+      // Create a draggable token in the center of the map from a roster icon.
       function createTokenFromIcon(icon) {
         const token = document.createElement("img");
         token.className = "map-agent-token";
@@ -177,6 +237,7 @@
         token.style.left = `${left}px`;
         token.style.top = `${top}px`;
 
+        // Start dragging and capture the pointer offset within the token.
         token.addEventListener("mousedown", (event) => {
           activeToken = token;
           const tokenRect = token.getBoundingClientRect();
@@ -188,12 +249,130 @@
         mapCanvas.appendChild(token);
       }
 
+      // Create a utility element on the map and start dragging it immediately.
+      function createUtilityOnMap(utilityType, event) {
+        const util = document.createElement("div");
+        util.className = `map-utility util-${utilityType.replace("_", "-")}`;
+        util.dataset.utilityType = utilityType;
+
+        util.addEventListener("mousedown", (mouseEvent) => {
+          activeToken = util;
+          const utilRect = util.getBoundingClientRect();
+          dragOffsetX = mouseEvent.clientX - utilRect.left;
+          dragOffsetY = mouseEvent.clientY - utilRect.top;
+          util.style.cursor = "grabbing";
+        });
+
+        mapCanvas.appendChild(util);
+
+        // Position the element under the cursor and start dragging.
+        const canvasRect = mapCanvas.getBoundingClientRect();
+        const utilRect = util.getBoundingClientRect();
+        const x = event.clientX - canvasRect.left - utilRect.width / 2;
+        const y = event.clientY - canvasRect.top - utilRect.height / 2;
+
+        const clampedX = clamp(x, 0, canvasRect.width - utilRect.width);
+        const clampedY = clamp(y, 0, canvasRect.height - utilRect.height);
+        util.style.left = `${clampedX}px`;
+        util.style.top = `${clampedY}px`;
+
+        activeToken = util;
+        dragOffsetX = utilRect.width / 2;
+        dragOffsetY = utilRect.height / 2;
+        util.style.cursor = "grabbing";
+      }
+
+      function renderUtilityPopover(agentId) {
+        const utilities = agentUtilityMap[agentId] || buildUtilitySlots(agentId);
+        utilityPopover.innerHTML = "";
+        utilities.forEach((util) => {
+          const button = document.createElement("button");
+          button.className = "utility-item";
+          button.dataset.utilityType = util.type;
+          button.title = util.label;
+          button.textContent =
+            util.type === "sphere_smoke"
+              ? "S"
+              : util.type === "line_smoke"
+                ? "L"
+                : util.type === "flash"
+                  ? "F"
+                  : "+";
+
+          button.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            createUtilityOnMap(util.type, event);
+          });
+
+          utilityPopover.appendChild(button);
+        });
+      }
+
+      function showUtilityPopover(icon) {
+        const agentId = icon.dataset.agentId;
+        if (!agentId) return;
+        activeAgentId = agentId;
+        renderUtilityPopover(agentId);
+        utilityPopover.classList.add("active");
+        utilityPopover.setAttribute("aria-hidden", "false");
+
+        const iconRect = icon.getBoundingClientRect();
+        const popoverRect = utilityPopover.getBoundingClientRect();
+        const rawLeft = iconRect.left + iconRect.width / 2 - popoverRect.width / 2;
+        const rawTop = iconRect.top - popoverRect.height + 2;
+        const safeLeft = clamp(rawLeft, 8, window.innerWidth - popoverRect.width - 8);
+        const safeTop = clamp(rawTop, 8, window.innerHeight - popoverRect.height - 8);
+        utilityPopover.style.left = `${safeLeft}px`;
+        utilityPopover.style.top = `${safeTop}px`;
+      }
+
+      function schedulePopoverHide() {
+        if (popoverHideTimer) clearTimeout(popoverHideTimer);
+        popoverHideTimer = setTimeout(() => {
+          utilityPopover.classList.remove("active");
+          utilityPopover.setAttribute("aria-hidden", "true");
+          activeAgentId = null;
+        }, 120);
+      }
+
+      function cancelPopoverHide() {
+        if (popoverHideTimer) {
+          clearTimeout(popoverHideTimer);
+          popoverHideTimer = null;
+        }
+      }
+
+      function getAgentIdFromIcon(icon) {
+        const src = icon.getAttribute("src") || "";
+        const fileName = src.split("/").pop() || "";
+        return fileName.toLowerCase().replace(".png", "");
+      }
+
+      // Spawn a token when a roster icon is clicked.
       agentIcons.forEach((icon) => {
+        icon.dataset.agentId = getAgentIdFromIcon(icon);
+        agentUtilityMap[icon.dataset.agentId] = buildUtilitySlots(
+          icon.dataset.agentId
+        );
+
         icon.addEventListener("click", () => {
           createTokenFromIcon(icon);
         });
+
+        icon.addEventListener("mouseenter", () => {
+          cancelPopoverHide();
+          showUtilityPopover(icon);
+        });
+
+        icon.addEventListener("mouseleave", () => {
+          schedulePopoverHide();
+        });
       });
 
+      utilityPopover.addEventListener("mouseenter", cancelPopoverHide);
+      utilityPopover.addEventListener("mouseleave", schedulePopoverHide);
+
+      // Track dragging, update token position, and highlight trash target.
       document.addEventListener("mousemove", (event) => {
         if (!activeToken) return;
         const canvasRect = mapCanvas.getBoundingClientRect();
@@ -218,6 +397,7 @@
         mapTrash.classList.toggle("active", isOverTrash);
       });
 
+      // Drop tokens; remove if released over the trash button.
       document.addEventListener("mouseup", () => {
         if (!activeToken) return;
         const trashRect = mapTrash.getBoundingClientRect();

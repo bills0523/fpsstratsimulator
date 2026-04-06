@@ -5,6 +5,7 @@ import random
 from dataclasses import dataclass
 from typing import Dict, List, Literal
 
+# Simulation resolution and baseline combat power scalar.
 TICKS_PER_SECOND = 10
 BASE_POWER = 10.0
 
@@ -22,6 +23,7 @@ UtilityState = Literal[
 
 @dataclass
 class Player:
+    """Static player inputs for a duel simulation."""
     name: str
     elo_factor: float
     weapon_category: int
@@ -97,10 +99,12 @@ def simulate_duel(player1: Player, player2: Player, max_seconds: int = 30) -> Di
     - Convert to kill probabilities
     - Roll for lethal shots, allow trades
     """
+    # Timeline captures per-tick narration for debugging or playback.
     timeline: List[str] = []
     total_ticks = max_seconds * TICKS_PER_SECOND
 
     for tick in range(1, total_ticks + 1):
+        # Compute power every tick to reflect current state.
         c1 = calculate_combat_power(player1, player2)
         c2 = calculate_combat_power(player2, player1)
 
@@ -113,6 +117,7 @@ def simulate_duel(player1: Player, player2: Player, max_seconds: int = 30) -> Di
         p1 = c1 / (c1 + c2)
         p2 = c2 / (c1 + c2)
 
+        # Stochastic kill resolution based on power-weighted probabilities.
         roll1 = random.random() < p1
         roll2 = random.random() < p2
 
@@ -164,6 +169,7 @@ def simulate_duel(player1: Player, player2: Player, max_seconds: int = 30) -> Di
 
 
 if __name__ == "__main__":
+    # Example usage: run a local duel simulation and print the JSON result.
     p1 = Player(
         name="Player 1",
         elo_factor=1.0,

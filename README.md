@@ -1,3 +1,4 @@
+<!-- Project overview and quick-start usage for the simulator. -->
 # FPS Strat Simulator
 
 A web-based 2D Valorant strategy simulator prototype. Current progress includes:

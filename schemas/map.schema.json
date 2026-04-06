@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/map.schema.json",
   "title": "Map Schema (Ascent)",
+  "$comment": "Validates map geometry and metadata for the Ascent layout.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "map"],
@@ -17,6 +18,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["x", "y"],
+      "$comment": "Single coordinate in map units.",
       "properties": {
         "x": { "type": "number" },
         "y": { "type": "number" }
@@ -26,12 +28,14 @@
       "type": "array",
       "minItems": 3,
       "items": { "$ref": "#/$defs/point" },
+      "$comment": "Polygon expressed as an ordered list of points.",
       "description": "Clockwise or counterclockwise polygon points."
     },
     "boundary": {
       "type": "object",
       "additionalProperties": false,
       "required": ["outer", "holes"],
+      "$comment": "Outer boundary plus optional interior holes.",
       "properties": {
         "outer": { "$ref": "#/$defs/polygon" },
         "holes": {
@@ -44,6 +48,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "site", "is_default", "area"],
+      "$comment": "Plantable area for spike placement.",
       "properties": {
         "id": {
           "type": "string",
@@ -64,6 +69,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "name", "coord"],
+      "$comment": "Named navigation anchor used for callouts or strategy.",
       "properties": {
         "id": {
           "type": "string",
@@ -84,6 +90,7 @@
         "plant_zones",
         "choke_points"
       ],
+      "$comment": "Top-level Ascent map definition.",
       "properties": {
         "id": {
           "type": "string",

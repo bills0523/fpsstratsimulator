@@ -1,3 +1,6 @@
+# FastAPI app framework and REST routing.
 fastapi
+# ASGI server for local development.
 uvicorn
+# Data validation models used by the API.
 pydantic
