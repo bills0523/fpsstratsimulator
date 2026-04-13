@@ -98,11 +98,13 @@
           </div>
           <button class="icon-btn danger">🗑</button>
         </div>
-        <!-- Map canvas container used for token placement and dragging. -->
-        <div class="map-wrapper" id="map-canvas">
+        <!-- Map canvas viewport used for token placement and dragging. -->
+        <div class="map-canvas" id="map-canvas">
           <!-- Trash target: drop tokens here to delete them. -->
           <button class="map-trash" id="map-trash" title="Delete token">🗑</button>
-          <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
+          <div class="map-wrapper" id="map-wrapper">
+            <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
+          </div>
         </div>
       </main>
 
@@ -129,7 +131,7 @@
             </div>
           </div>
         </div>
-        <div class="bottom-right">
+        <div class="bottom-right" id="agent-roster">
           <img src="assets/agents/astra.png" alt="Astra" class="agent-icon" />
           <img src="assets/agents/breach.png" alt="Breach" class="agent-icon" />
           <img src="assets/agents/brimstone.png" alt="Brimstone" class="agent-icon" />
@@ -167,9 +169,12 @@
     <script>
       // DOM handles used by the token placement + drag logic below.
       const mapCanvas = document.getElementById("map-canvas");
+      const mapWrapper = document.getElementById("map-wrapper");
       const mapTrash = document.getElementById("map-trash");
       const agentIcons = document.querySelectorAll(".agent-icon");
       const utilityPopover = document.getElementById("utility-popover");
+      const agentRoster = document.getElementById("agent-roster");
+      const sideToggles = document.querySelectorAll(".map-toggle .toggle");
 
       // Drag state for the currently active map token.
       let activeToken = null;
@@ -177,127 +182,315 @@
       let dragOffsetY = 0;
       let popoverHideTimer = null;
       let activeAgentId = null;
+      let currentSide = "attack";
 
-      // Utility category assignments.
-      const utilityCategories = {
-        sphere_smoke: ["clove", "viper", "brimstone", "omen", "harbor", "mito", "astra"],
-        line_smoke: ["viper", "harbor"],
-        flash: [
-          "reyna",
-          "yoru",
-          "skye",
-          "phoenix",
-          "pheonix",
-          "ko",
-          "gekko",
-          "breach",
-          "vyse",
+      // Pan/zoom state for the map viewport.
+      let panX = 0;
+      let panY = 0;
+      let zoom = 1;
+      let isPanning = false;
+      let panStartX = 0;
+      let panStartY = 0;
+      let panOriginX = 0;
+      let panOriginY = 0;
+      let spacePressed = false;
+
+      // Agent -> 4 utility definitions (name + CSS type class).
+      const agentUtilities = {
+        astra: [
+          { name: "Nebula", type: "util-sphere" },
+          { name: "Nova Pulse", type: "util-stun" },
+          { name: "Gravity Well", type: "util-stun" },
+          { name: "Cosmic Divide", type: "util-line" },
+        ],
+        breach: [
+          { name: "Flashpoint", type: "util-flash" },
+          { name: "Fault Line", type: "util-stun" },
+          { name: "Aftershock", type: "util-stun" },
+          { name: "Rolling Thunder", type: "util-stun" },
+        ],
+        brimstone: [
+          { name: "Incendiary", type: "util-molly" },
+          { name: "Sky Smoke", type: "util-sphere" },
+          { name: "Orbital Strike", type: "util-stun" },
+          { name: "Stim Beacon", type: "util-sphere" },
+        ],
+        chamber: [
+          { name: "Trademark", type: "util-trap" },
+          { name: "Trademark", type: "util-trap" },
+          { name: "Rendezvous", type: "util-recon" },
+          { name: "Tour de Force", type: "util-stun" },
+        ],
+        clove: [
+          { name: "Ruse", type: "util-sphere" },
+          { name: "Meddle", type: "util-molly" },
+          { name: "Pick-Me-Up", type: "util-stun" },
+          { name: "Not Dead Yet", type: "util-recon" },
+        ],
+        cypher: [
+          { name: "Trapwire", type: "util-trap" },
+          { name: "Trapwire", type: "util-trap" },
+          { name: "Cyber Cage", type: "util-sphere" },
+          { name: "Spycam", type: "util-recon" },
+        ],
+        deadlock: [
+          { name: "GravNet", type: "util-trap" },
+          { name: "Sonic Sensor", type: "util-trap" },
+          { name: "Barrier Mesh", type: "util-line" },
+          { name: "Annihilation", type: "util-stun" },
+        ],
+        fade: [
+          { name: "Haunt", type: "util-recon" },
+          { name: "Prowler", type: "util-recon" },
+          { name: "Seize", type: "util-stun" },
+          { name: "Nightfall", type: "util-recon" },
+        ],
+        gekko: [
+          { name: "Dizzy", type: "util-flash" },
+          { name: "Wingman", type: "util-stun" },
+          { name: "Mosh Pit", type: "util-molly" },
+          { name: "Thrash", type: "util-recon" },
+        ],
+        harbor: [
+          { name: "Cove", type: "util-sphere" },
+          { name: "High Tide", type: "util-line" },
+          { name: "Cascade", type: "util-line" },
+          { name: "Reckoning", type: "util-stun" },
+        ],
+        iso: [
+          { name: "Double Tap", type: "util-stun" },
+          { name: "Undercut", type: "util-stun" },
+          { name: "Contingency", type: "util-line" },
+          { name: "Kill Contract", type: "util-stun" },
+        ],
+        jett: [
+          { name: "Cloudburst", type: "util-sphere" },
+          { name: "Updraft", type: "util-stun" },
+          { name: "Tailwind", type: "util-stun" },
+          { name: "Blade Storm", type: "util-stun" },
+        ],
+        kj: [
+          { name: "Nanoswarm", type: "util-molly" },
+          { name: "Nanoswarm", type: "util-molly" },
+          { name: "Alarmbot", type: "util-trap" },
+          { name: "Lockdown", type: "util-stun" },
+        ],
+        ko: [
+          { name: "FLASH/drive", type: "util-flash" },
+          { name: "FRAG/ment", type: "util-molly" },
+          { name: "ZERO/point", type: "util-recon" },
+          { name: "NULL/cmd", type: "util-stun" },
+        ],
+        mito: [
+          { name: "Mist Screen", type: "util-sphere" },
+          { name: "Surge Line", type: "util-line" },
+          { name: "Static Flash", type: "util-flash" },
+          { name: "Shockwave", type: "util-stun" },
+        ],
+        neon: [
+          { name: "Relay Bolt", type: "util-stun" },
+          { name: "Fast Lane", type: "util-line" },
+          { name: "High Gear", type: "util-stun" },
+          { name: "Overdrive", type: "util-stun" },
+        ],
+        omen: [
+          { name: "Dark Cover", type: "util-sphere" },
+          { name: "Paranoia", type: "util-flash" },
+          { name: "Shrouded Step", type: "util-line" },
+          { name: "From the Shadows", type: "util-recon" },
+        ],
+        pheonix: [
+          { name: "Blaze", type: "util-line" },
+          { name: "Curveball", type: "util-flash" },
+          { name: "Hot Hands", type: "util-molly" },
+          { name: "Run it Back", type: "util-stun" },
+        ],
+        phoenix: [
+          { name: "Blaze", type: "util-line" },
+          { name: "Curveball", type: "util-flash" },
+          { name: "Hot Hands", type: "util-molly" },
+          { name: "Run it Back", type: "util-stun" },
+        ],
+        raze: [
+          { name: "Boom Bot", type: "util-recon" },
+          { name: "Paint Shells", type: "util-molly" },
+          { name: "Blast Pack", type: "util-stun" },
+          { name: "Showstopper", type: "util-stun" },
+        ],
+        reyna: [
+          { name: "Leer", type: "util-flash" },
+          { name: "Devour", type: "util-stun" },
+          { name: "Dismiss", type: "util-stun" },
+          { name: "Empress", type: "util-stun" },
+        ],
+        sage: [
+          { name: "Barrier Orb", type: "util-line" },
+          { name: "Slow Orb", type: "util-stun" },
+          { name: "Healing Orb", type: "util-sphere" },
+          { name: "Resurrection", type: "util-stun" },
+        ],
+        skye: [
+          { name: "Guiding Light", type: "util-flash" },
+          { name: "Trailblazer", type: "util-recon" },
+          { name: "Regrowth", type: "util-sphere" },
+          { name: "Seekers", type: "util-recon" },
+        ],
+        sove: [
+          { name: "Recon Bolt", type: "util-recon" },
+          { name: "Shock Bolt", type: "util-molly" },
+          { name: "Owl Drone", type: "util-recon" },
+          { name: "Hunter's Fury", type: "util-line" },
+        ],
+        tejo: [
+          { name: "Pulse Net", type: "util-trap" },
+          { name: "Quake Line", type: "util-line" },
+          { name: "Shatter Flash", type: "util-flash" },
+          { name: "Ground Spike", type: "util-stun" },
+        ],
+        veto: [
+          { name: "Lock Snare", type: "util-trap" },
+          { name: "Signal Bloom", type: "util-recon" },
+          { name: "Burst Charge", type: "util-molly" },
+          { name: "Dead Zone", type: "util-stun" },
+        ],
+        viper: [
+          { name: "Snake Bite", type: "util-molly" },
+          { name: "Poison Cloud", type: "util-sphere" },
+          { name: "Toxic Screen", type: "util-line" },
+          { name: "Viper's Pit", type: "util-sphere" },
+        ],
+        vyse: [
+          { name: "Arc Flash", type: "util-flash" },
+          { name: "Steel Snare", type: "util-trap" },
+          { name: "Obscura", type: "util-sphere" },
+          { name: "Overload", type: "util-stun" },
+        ],
+        waylay: [
+          { name: "Mirror Smoke", type: "util-sphere" },
+          { name: "Slipstream", type: "util-line" },
+          { name: "Lumen Flash", type: "util-flash" },
+          { name: "Lockdown Field", type: "util-stun" },
+        ],
+        yoru: [
+          { name: "Blindside", type: "util-flash" },
+          { name: "Gatecrash", type: "util-line" },
+          { name: "Fakeout", type: "util-recon" },
+          { name: "Dimensional Drift", type: "util-stun" },
         ],
       };
-
-      // Normalize and build a 4-slot utility list for a given agent.
-      function buildUtilitySlots(agentId) {
-        const slots = [];
-        if (utilityCategories.sphere_smoke.includes(agentId)) {
-          slots.push({ type: "sphere_smoke", label: "Sphere Smoke" });
-        }
-        if (utilityCategories.line_smoke.includes(agentId)) {
-          slots.push({ type: "line_smoke", label: "Line Smoke" });
-        }
-        if (utilityCategories.flash.includes(agentId)) {
-          slots.push({ type: "flash", label: "Flash" });
-        }
-        while (slots.length < 4) {
-          slots.push({ type: "placeholder_util", label: "Placeholder" });
-        }
-        return slots.slice(0, 4);
-      }
-
-      // Map agent id -> utilities (always 4 items).
-      const agentUtilityMap = {};
 
       // Keep token movement inside the map canvas bounds.
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
 
+      function applyMapTransform() {
+        mapWrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      }
+
+      function screenToMap(clientX, clientY) {
+        const canvasRect = mapCanvas.getBoundingClientRect();
+        const x = (clientX - canvasRect.left - panX) / zoom;
+        const y = (clientY - canvasRect.top - panY) / zoom;
+        return { x, y };
+      }
+
+      function getMapSize() {
+        return {
+          width: mapWrapper.offsetWidth,
+          height: mapWrapper.offsetHeight,
+        };
+      }
+
+      function getElementSizeInMap(el) {
+        const rect = el.getBoundingClientRect();
+        return { width: rect.width / zoom, height: rect.height / zoom };
+      }
+
       // Create a draggable token in the center of the map from a roster icon.
       function createTokenFromIcon(icon) {
         const token = document.createElement("img");
         token.className = "map-agent-token";
+        token.dataset.anchor = "topleft";
+        token.dataset.side = currentSide;
         token.src = icon.src;
         token.alt = icon.alt || "Agent";
         token.draggable = false;
 
         const rect = mapCanvas.getBoundingClientRect();
+        const center = screenToMap(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2
+        );
         const size = 40;
-        const left = (rect.width - size) / 2;
-        const top = (rect.height - size) / 2;
+        const left = center.x - size / 2;
+        const top = center.y - size / 2;
 
         token.style.left = `${left}px`;
         token.style.top = `${top}px`;
 
         // Start dragging and capture the pointer offset within the token.
         token.addEventListener("mousedown", (event) => {
+          if (spacePressed || event.button === 1) return;
           activeToken = token;
-          const tokenRect = token.getBoundingClientRect();
-          dragOffsetX = event.clientX - tokenRect.left;
-          dragOffsetY = event.clientY - tokenRect.top;
+          const cursor = screenToMap(event.clientX, event.clientY);
+          dragOffsetX = cursor.x - parseFloat(token.style.left);
+          dragOffsetY = cursor.y - parseFloat(token.style.top);
           token.style.cursor = "grabbing";
         });
 
-        mapCanvas.appendChild(token);
+        mapWrapper.appendChild(token);
       }
 
-      // Create a utility element on the map and start dragging it immediately.
+      // Create a utility element on the map, centered in the viewport.
       function createUtilityOnMap(utilityType, event) {
         const util = document.createElement("div");
-        util.className = `map-utility util-${utilityType.replace("_", "-")}`;
+        util.className = `map-utility ${utilityType}`;
         util.dataset.utilityType = utilityType;
+        util.dataset.anchor = "center";
+        util.dataset.side = currentSide;
 
         util.addEventListener("mousedown", (mouseEvent) => {
+          if (spacePressed || mouseEvent.button === 1) return;
           activeToken = util;
-          const utilRect = util.getBoundingClientRect();
-          dragOffsetX = mouseEvent.clientX - utilRect.left;
-          dragOffsetY = mouseEvent.clientY - utilRect.top;
+          const cursor = screenToMap(mouseEvent.clientX, mouseEvent.clientY);
+          dragOffsetX = cursor.x - parseFloat(util.style.left);
+          dragOffsetY = cursor.y - parseFloat(util.style.top);
           util.style.cursor = "grabbing";
         });
 
-        mapCanvas.appendChild(util);
+        mapWrapper.appendChild(util);
 
-        // Position the element under the cursor and start dragging.
+        // Position the element at the center of the map canvas.
         const canvasRect = mapCanvas.getBoundingClientRect();
-        const utilRect = util.getBoundingClientRect();
-        const x = event.clientX - canvasRect.left - utilRect.width / 2;
-        const y = event.clientY - canvasRect.top - utilRect.height / 2;
-
-        const clampedX = clamp(x, 0, canvasRect.width - utilRect.width);
-        const clampedY = clamp(y, 0, canvasRect.height - utilRect.height);
-        util.style.left = `${clampedX}px`;
-        util.style.top = `${clampedY}px`;
-
-        activeToken = util;
-        dragOffsetX = utilRect.width / 2;
-        dragOffsetY = utilRect.height / 2;
-        util.style.cursor = "grabbing";
+        const mapCenter = screenToMap(
+          canvasRect.left + canvasRect.width / 2,
+          canvasRect.top + canvasRect.height / 2
+        );
+        const utilSize = getElementSizeInMap(util);
+        const halfW = utilSize.width / 2;
+        const halfH = utilSize.height / 2;
+        const mapSize = getMapSize();
+        const clampedCenterX = clamp(mapCenter.x, halfW, mapSize.width - halfW);
+        const clampedCenterY = clamp(mapCenter.y, halfH, mapSize.height - halfH);
+        util.style.left = `${clampedCenterX}px`;
+        util.style.top = `${clampedCenterY}px`;
       }
 
       function renderUtilityPopover(agentId) {
-        const utilities = agentUtilityMap[agentId] || buildUtilitySlots(agentId);
+        const utilities = agentUtilities[agentId] || [];
         utilityPopover.innerHTML = "";
         utilities.forEach((util) => {
           const button = document.createElement("button");
           button.className = "utility-item";
           button.dataset.utilityType = util.type;
-          button.title = util.label;
-          button.textContent =
-            util.type === "sphere_smoke"
-              ? "S"
-              : util.type === "line_smoke"
-                ? "L"
-                : util.type === "flash"
-                  ? "F"
-                  : "+";
+          button.title = util.name;
+          button.textContent = util.name
+            .split(" ")
+            .map((word) => word[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
 
           button.addEventListener("mousedown", (event) => {
             event.preventDefault();
@@ -319,8 +512,12 @@
         const iconRect = icon.getBoundingClientRect();
         const popoverRect = utilityPopover.getBoundingClientRect();
         const rawLeft = iconRect.left + iconRect.width / 2 - popoverRect.width / 2;
-        const rawTop = iconRect.top - popoverRect.height + 2;
-        const safeLeft = clamp(rawLeft, 8, window.innerWidth - popoverRect.width - 8);
+        const rawTop = iconRect.top - popoverRect.height;
+        const safeLeft = clamp(
+          rawLeft,
+          8,
+          window.innerWidth - popoverRect.width - 8
+        );
         const safeTop = clamp(rawTop, 8, window.innerHeight - popoverRect.height - 8);
         utilityPopover.style.left = `${safeLeft}px`;
         utilityPopover.style.top = `${safeTop}px`;
@@ -348,12 +545,17 @@
         return fileName.toLowerCase().replace(".png", "");
       }
 
+      function isMovingToPopover(event) {
+        return utilityPopover.contains(event.relatedTarget);
+      }
+
+      function isMovingToAgent(event) {
+        return event.relatedTarget && event.relatedTarget.classList?.contains("agent-icon");
+      }
+
       // Spawn a token when a roster icon is clicked.
       agentIcons.forEach((icon) => {
         icon.dataset.agentId = getAgentIdFromIcon(icon);
-        agentUtilityMap[icon.dataset.agentId] = buildUtilitySlots(
-          icon.dataset.agentId
-        );
 
         icon.addEventListener("click", () => {
           createTokenFromIcon(icon);
@@ -364,29 +566,129 @@
           showUtilityPopover(icon);
         });
 
-        icon.addEventListener("mouseleave", () => {
+        icon.addEventListener("mouseleave", (event) => {
+          if (isMovingToPopover(event)) return;
           schedulePopoverHide();
         });
       });
 
       utilityPopover.addEventListener("mouseenter", cancelPopoverHide);
-      utilityPopover.addEventListener("mouseleave", schedulePopoverHide);
+      utilityPopover.addEventListener("mouseleave", (event) => {
+        if (isMovingToAgent(event)) return;
+        schedulePopoverHide();
+      });
+
+      // Side toggle (attack/defend) updates global state and UI theme.
+      function setSide(side) {
+        currentSide = side;
+        document.body.dataset.side = side;
+        sideToggles.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.side === side);
+        });
+      }
+
+      sideToggles.forEach((btn) => {
+        const label = btn.textContent.trim().toLowerCase();
+        btn.dataset.side = label === "attack" ? "attack" : "defense";
+        btn.addEventListener("click", () => {
+          setSide(btn.dataset.side);
+        });
+      });
+
+      setSide(currentSide);
+      applyMapTransform();
+
+      // Pan controls: space + drag or middle mouse.
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          spacePressed = true;
+          mapCanvas.style.cursor = "grab";
+        }
+      });
+
+      document.addEventListener("keyup", (event) => {
+        if (event.code === "Space") {
+          spacePressed = false;
+          mapCanvas.style.cursor = "";
+        }
+      });
+
+      mapCanvas.addEventListener("mousedown", (event) => {
+        const isMiddle = event.button === 1;
+        const isSpaceDrag = event.button === 0 && spacePressed;
+        if (!isMiddle && !isSpaceDrag) return;
+        event.preventDefault();
+        isPanning = true;
+        panStartX = event.clientX;
+        panStartY = event.clientY;
+        panOriginX = panX;
+        panOriginY = panY;
+        mapCanvas.style.cursor = "grabbing";
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isPanning) {
+          isPanning = false;
+          mapCanvas.style.cursor = spacePressed ? "grab" : "";
+        }
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (!isPanning) return;
+        const dx = event.clientX - panStartX;
+        const dy = event.clientY - panStartY;
+        panX = panOriginX + dx;
+        panY = panOriginY + dy;
+        applyMapTransform();
+      });
+
+      mapCanvas.addEventListener(
+        "wheel",
+        (event) => {
+          event.preventDefault();
+          const zoomDelta = event.deltaY > 0 ? -0.1 : 0.1;
+          const newZoom = clamp(zoom + zoomDelta, 0.5, 3.0);
+          if (newZoom === zoom) return;
+
+          const canvasRect = mapCanvas.getBoundingClientRect();
+          const mouseX = event.clientX - canvasRect.left;
+          const mouseY = event.clientY - canvasRect.top;
+          const mapX = (mouseX - panX) / zoom;
+          const mapY = (mouseY - panY) / zoom;
+
+          zoom = newZoom;
+          panX = mouseX - mapX * zoom;
+          panY = mouseY - mapY * zoom;
+          applyMapTransform();
+        },
+        { passive: false }
+      );
 
       // Track dragging, update token position, and highlight trash target.
       document.addEventListener("mousemove", (event) => {
-        if (!activeToken) return;
-        const canvasRect = mapCanvas.getBoundingClientRect();
-        const tokenRect = activeToken.getBoundingClientRect();
-        const size = tokenRect.width;
+        if (!activeToken || isPanning) return;
+        const cursor = screenToMap(event.clientX, event.clientY);
+        const mapSize = getMapSize();
+        const tokenSize = getElementSizeInMap(activeToken);
+        const anchor = activeToken.dataset.anchor || "topleft";
 
-        const x = event.clientX - canvasRect.left - dragOffsetX;
-        const y = event.clientY - canvasRect.top - dragOffsetY;
-
-        const clampedX = clamp(x, 0, canvasRect.width - size);
-        const clampedY = clamp(y, 0, canvasRect.height - size);
-
-        activeToken.style.left = `${clampedX}px`;
-        activeToken.style.top = `${clampedY}px`;
+        if (anchor === "center") {
+          const halfW = tokenSize.width / 2;
+          const halfH = tokenSize.height / 2;
+          const centerX = cursor.x - dragOffsetX;
+          const centerY = cursor.y - dragOffsetY;
+          const clampedCenterX = clamp(centerX, halfW, mapSize.width - halfW);
+          const clampedCenterY = clamp(centerY, halfH, mapSize.height - halfH);
+          activeToken.style.left = `${clampedCenterX}px`;
+          activeToken.style.top = `${clampedCenterY}px`;
+        } else {
+          const x = cursor.x - dragOffsetX;
+          const y = cursor.y - dragOffsetY;
+          const clampedX = clamp(x, 0, mapSize.width - tokenSize.width);
+          const clampedY = clamp(y, 0, mapSize.height - tokenSize.height);
+          activeToken.style.left = `${clampedX}px`;
+          activeToken.style.top = `${clampedY}px`;
+        }
 
         const trashRect = mapTrash.getBoundingClientRect();
         const isOverTrash =

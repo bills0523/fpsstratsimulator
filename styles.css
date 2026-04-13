@@ -8,6 +8,8 @@
   --text: #eef4ef;
   --muted: #b3bcb5;
   --accent: #00ff88;
+  --team-color: #00ff88;
+  --team-rgb: 0, 255, 136;
 }
 
 /* Global reset + base typography. */
@@ -24,6 +26,16 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+body[data-side="attack"] {
+  --team-color: #ff4655;
+  --team-rgb: 255, 70, 85;
+}
+
+body[data-side="defense"] {
+  --team-color: #00ff88;
+  --team-rgb: 0, 255, 136;
 }
 
 /* Main layout grid: left sidebar, map, right sidebar, bottom bar. */
@@ -57,6 +69,8 @@ body {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Right-side summary/actions panel. */
@@ -79,6 +93,8 @@ body {
   grid-template-columns: 300px 1fr;
   background: var(--panel-2);
   border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 40;
 }
 
 /* Stacked sections within the left sidebar. */
@@ -238,17 +254,21 @@ body {
   cursor: pointer;
 }
 
-/* Map canvas boundary; tokens are absolutely positioned inside. */
-.map-wrapper {
+/* Map canvas viewport; the wrapper inside is transformed. */
+.map-canvas {
   flex: 1;
   border: 1px solid var(--accent);
   border-radius: 14px;
   background: #151f18;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   position: relative;
+}
+
+/* Transformable layer that holds the map image and tokens. */
+.map-wrapper {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
 }
 
 /* Trash target used to remove dropped tokens. */
@@ -281,6 +301,7 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 /* Right sidebar header. */
@@ -333,9 +354,11 @@ body {
 .bottom-right {
   display: flex;
   overflow-x: auto;
+  overflow-y: visible;
   white-space: nowrap;
   align-items: center;
   padding: 6px 0;
+  position: relative;
 }
 
 /* Agent portrait used for spawning tokens. */
@@ -368,7 +391,7 @@ body {
 /* Hover utility popover anchored above agent portraits. */
 .utility-popover {
   position: fixed;
-  z-index: 6;
+  z-index: 9999;
   display: none;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
@@ -384,9 +407,19 @@ body {
   display: grid;
 }
 
+.utility-popover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 8px;
+  background: transparent;
+}
+
 .utility-item {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
   border: 1px solid #314232;
   background: #151f18;
@@ -425,10 +458,22 @@ button:hover,
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--team-color);
   object-fit: cover;
   cursor: grab;
   user-select: none;
+}
+
+.map-agent-token[data-side="attack"],
+.map-utility[data-side="attack"] {
+  --team-color: #ff4655;
+  --team-rgb: 255, 70, 85;
+}
+
+.map-agent-token[data-side="defense"],
+.map-utility[data-side="defense"] {
+  --team-color: #00ff88;
+  --team-rgb: 0, 255, 136;
 }
 
 /* Shared base for map-placed utilities. */
@@ -438,40 +483,108 @@ button:hover,
   user-select: none;
 }
 
-/* Sphere smoke: larger, semi-opaque circle. */
-.util-sphere-smoke {
+/* Sphere utility. */
+.util-sphere {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(150, 150, 150, 0.4);
-  border: 2px solid #888;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.35);
+  background: rgba(var(--team-rgb), 0.2);
+  border: 2px solid var(--team-color);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
 }
 
-/* Line smoke: flat bar that can later be rotated. */
-.util-line-smoke {
-  width: 25%;
+/* Line utility. */
+.util-line {
+  width: 200px;
   height: 8px;
   border-radius: 4px;
-  background: rgba(64, 200, 170, 0.55);
-  border: 1px solid rgba(120, 255, 210, 0.65);
+  background: rgba(var(--team-rgb), 0.7);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
   transform-origin: center;
 }
 
-/* Flash: small, intense, high-contrast marker. */
+/* Flash utility. */
 .util-flash {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #ccff00;
-  box-shadow: 0 0 10px rgba(204, 255, 0, 0.8);
+  background: var(--team-color);
+  box-shadow: 0 0 10px var(--team-color);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
 }
 
-/* Placeholder slot styling when a utility is not assigned. */
-.util-placeholder-util {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px dashed #3a4a3b;
-  background: rgba(21, 31, 24, 0.8);
+/* Molly utility. */
+.util-molly {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(var(--team-rgb), 0.3);
+  border: 2px dashed var(--team-color);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+/* Recon utility with center dot. */
+.util-recon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(var(--team-rgb), 0.08);
+  border: 1px solid rgba(var(--team-rgb), 0.5);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+.util-recon::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--team-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Trap utility with dashed radius ring. */
+.util-trap {
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 2px solid var(--team-color);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+.util-trap::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px dashed rgba(var(--team-rgb), 0.7);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Stun utility. */
+.util-stun {
+  width: 120px;
+  height: 40px;
+  background: rgba(var(--team-rgb), 0.15);
+  border: 2px solid var(--team-color);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
 }
