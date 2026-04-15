@@ -9,6 +9,7 @@ from typing import Dict, List, Literal
 # Simulation resolution and baseline combat power scalar.
 TICKS_PER_SECOND = 10
 BASE_POWER = 10.0
+PIXELS_PER_METER = 10.0
 
 AngleState = Literal["holding_45", "peeking_90", "neutral"]
 UtilityType = Literal[
@@ -60,6 +61,11 @@ def check_utility_intersection(player: Player, utilities: List[Utility]) -> List
             elif util.side != player.side:
                 intersecting.append(util.type)
     return intersecting
+
+
+def get_distance_m(player: Player, opponent: Player) -> float:
+    """Convert pixel distance to meters using a fixed scale."""
+    return hypot(player.x - opponent.x, player.y - opponent.y) / PIXELS_PER_METER
 
 
 def get_weapon_modifier(category: int, distance: float) -> float:
@@ -121,7 +127,8 @@ def calculate_combat_power(
     player_intersections = check_utility_intersection(player, active_utilities)
     opponent_intersections = check_utility_intersection(opponent, active_utilities)
 
-    weapon_mod = get_weapon_modifier(player.weapon_category, player.distance_to_target)
+    distance_m = get_distance_m(player, opponent)
+    weapon_mod = get_weapon_modifier(player.weapon_category, distance_m)
     angle_mod = get_angle_modifier(player.angle_state, player.elo_factor, player.side)
 
     # If opponent is in recon, nullify their angle advantage.

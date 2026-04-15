@@ -166,6 +166,21 @@
     </div>
     <!-- Hover popover for agent utilities (positioned via JS). -->
     <div class="utility-popover" id="utility-popover" aria-hidden="true"></div>
+    <!-- Context menu for selecting weapons on agent tokens. -->
+    <div class="weapon-popover" id="weapon-popover" aria-hidden="true">
+      <button class="weapon-option" data-weapon="1" title="Pistol">
+        <span class="weapon-icon weapon-pistol"></span>
+      </button>
+      <button class="weapon-option" data-weapon="2" title="SMG/Shotgun">
+        <span class="weapon-icon weapon-smg"></span>
+      </button>
+      <button class="weapon-option" data-weapon="3" title="Rifle">
+        <span class="weapon-icon weapon-rifle"></span>
+      </button>
+      <button class="weapon-option" data-weapon="4" title="Sniper">
+        <span class="weapon-icon weapon-sniper"></span>
+      </button>
+    </div>
     <script>
       // DOM handles used by the token placement + drag logic below.
       const mapCanvas = document.getElementById("map-canvas");
@@ -175,6 +190,8 @@
       const utilityPopover = document.getElementById("utility-popover");
       const agentRoster = document.getElementById("agent-roster");
       const sideToggles = document.querySelectorAll(".map-toggle .toggle");
+      const weaponPopover = document.getElementById("weapon-popover");
+      const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
 
       // Drag state for the currently active map token.
       let activeToken = null;
@@ -194,6 +211,7 @@
       let panOriginX = 0;
       let panOriginY = 0;
       let spacePressed = false;
+      let activeWeaponToken = null;
 
       // Agent -> 4 utility definitions (name + CSS type class).
       const agentUtilities = {
@@ -409,13 +427,21 @@
 
       // Create a draggable token in the center of the map from a roster icon.
       function createTokenFromIcon(icon) {
-        const token = document.createElement("img");
+        const token = document.createElement("div");
         token.className = "map-agent-token";
         token.dataset.anchor = "topleft";
         token.dataset.side = currentSide;
-        token.src = icon.src;
-        token.alt = icon.alt || "Agent";
-        token.draggable = false;
+        token.dataset.weapon = "3";
+        token.style.backgroundImage = `url("${icon.src}")`;
+        token.setAttribute("aria-label", icon.alt || "Agent");
+
+        const badge = document.createElement("span");
+        badge.className = "weapon-badge";
+        badge.dataset.weapon = "3";
+        const badgeIcon = document.createElement("span");
+        badgeIcon.className = "weapon-icon";
+        badge.appendChild(badgeIcon);
+        token.appendChild(badge);
 
         const rect = mapCanvas.getBoundingClientRect();
         const center = screenToMap(
@@ -437,6 +463,15 @@
           dragOffsetX = cursor.x - parseFloat(token.style.left);
           dragOffsetY = cursor.y - parseFloat(token.style.top);
           token.style.cursor = "grabbing";
+        });
+
+        token.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          showWeaponPopover(token, event.clientX, event.clientY);
+        });
+
+        token.addEventListener("dblclick", (event) => {
+          showWeaponPopover(token, event.clientX, event.clientY);
         });
 
         mapWrapper.appendChild(token);
@@ -578,6 +613,41 @@
         schedulePopoverHide();
       });
 
+      function showWeaponPopover(token, clientX, clientY) {
+        activeWeaponToken = token;
+        weaponPopover.classList.add("active");
+        weaponPopover.setAttribute("aria-hidden", "false");
+        const popRect = weaponPopover.getBoundingClientRect();
+        const left = clamp(clientX + 8, 8, window.innerWidth - popRect.width - 8);
+        const top = clamp(clientY - popRect.height / 2, 8, window.innerHeight - popRect.height - 8);
+        weaponPopover.style.left = `${left}px`;
+        weaponPopover.style.top = `${top}px`;
+      }
+
+      function hideWeaponPopover() {
+        weaponPopover.classList.remove("active");
+        weaponPopover.setAttribute("aria-hidden", "true");
+        activeWeaponToken = null;
+      }
+
+      weaponOptions.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (!activeWeaponToken) return;
+          const weapon = btn.dataset.weapon;
+          activeWeaponToken.dataset.weapon = weapon;
+          const badge = activeWeaponToken.querySelector(".weapon-badge");
+          if (badge) badge.dataset.weapon = weapon;
+          hideWeaponPopover();
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!weaponPopover.classList.contains("active")) return;
+        if (weaponPopover.contains(event.target)) return;
+        if (activeWeaponToken && activeWeaponToken.contains(event.target)) return;
+        hideWeaponPopover();
+      });
+
       // Side toggle (attack/defend) updates global state and UI theme.
       function setSide(side) {
         currentSide = side;
@@ -597,6 +667,36 @@
 
       setSide(currentSide);
       applyMapTransform();
+
+      function buildSimulationPayload() {
+        const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map(
+          (token) => ({
+            id: token.getAttribute("aria-label") || "agent",
+            x: parseFloat(token.style.left),
+            y: parseFloat(token.style.top),
+            side: token.dataset.side || "attack",
+            weapon_category: parseInt(token.dataset.weapon || "3", 10),
+          })
+        );
+
+        const utilities = Array.from(mapWrapper.querySelectorAll(".map-utility")).map(
+          (util, idx) => ({
+            id: `util_${idx}`,
+            type: util.dataset.utilityType || "util-sphere",
+            x: parseFloat(util.style.left),
+            y: parseFloat(util.style.top),
+            radius: 0,
+            side: util.dataset.side || "attack",
+          })
+        );
+
+        return {
+          map: "Bind",
+          created_at: new Date().toISOString(),
+          players,
+          utilities,
+        };
+      }
 
       // Pan controls: space + drag or middle mouse.
       document.addEventListener("keydown", (event) => {

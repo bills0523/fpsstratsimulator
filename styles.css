@@ -433,6 +433,102 @@ body[data-side="defense"] {
   border-color: #ccff00;
 }
 
+/* Weapon context menu. */
+.weapon-popover {
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #1b241e;
+  border: 1px solid var(--team-color);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+.weapon-popover.active {
+  display: grid;
+  grid-template-columns: repeat(4, 34px);
+}
+
+.weapon-option {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #2b3a30;
+  background: #111813;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.weapon-option:hover {
+  border-color: var(--team-color);
+}
+
+.weapon-icon {
+  display: block;
+  position: relative;
+  background: var(--team-color);
+}
+
+.weapon-pistol {
+  width: 14px;
+  height: 5px;
+  border-radius: 2px;
+}
+
+.weapon-pistol::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -5px;
+  width: 4px;
+  height: 6px;
+  background: var(--team-color);
+  border-radius: 0 0 2px 2px;
+}
+
+.weapon-smg {
+  width: 16px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.weapon-rifle {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.weapon-rifle::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: -5px;
+  width: 4px;
+  height: 6px;
+  background: var(--team-color);
+  border-radius: 0 0 2px 2px;
+}
+
+.weapon-sniper {
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.weapon-sniper::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: -5px;
+  width: 8px;
+  height: 4px;
+  border: 1px solid var(--team-color);
+  border-radius: 2px;
+}
+
 /* Shared hover accent for clickable controls. */
 button:hover,
 .tool:hover,
@@ -459,9 +555,89 @@ button:hover,
   height: 40px;
   border-radius: 50%;
   border: 2px solid var(--team-color);
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
   cursor: grab;
   user-select: none;
+}
+
+.weapon-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: #111813;
+  border: 1px solid var(--team-color);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.weapon-badge .weapon-icon {
+  width: 10px;
+  height: 6px;
+  position: relative;
+  display: block;
+  background: var(--team-color);
+}
+
+.weapon-badge[data-weapon="1"] .weapon-icon {
+  width: 9px;
+  height: 5px;
+  border-radius: 2px 2px 1px 1px;
+}
+
+.weapon-badge[data-weapon="1"] .weapon-icon::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  width: 3px;
+  height: 4px;
+  background: var(--team-color);
+  border-radius: 0 0 1px 1px;
+}
+
+.weapon-badge[data-weapon="2"] .weapon-icon {
+  width: 10px;
+  height: 6px;
+  border-radius: 2px;
+}
+
+.weapon-badge[data-weapon="3"] .weapon-icon {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.weapon-badge[data-weapon="3"] .weapon-icon::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: -3px;
+  width: 3px;
+  height: 4px;
+  background: var(--team-color);
+  border-radius: 0 0 1px 1px;
+}
+
+.weapon-badge[data-weapon="4"] .weapon-icon {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.weapon-badge[data-weapon="4"] .weapon-icon::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: -4px;
+  width: 6px;
+  height: 4px;
+  border-radius: 2px;
+  border: 1px solid var(--team-color);
 }
 
 .map-agent-token[data-side="attack"],
