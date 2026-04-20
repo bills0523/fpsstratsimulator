@@ -6,5 +6,5 @@
   <rect x="108" y="438" width="1360" height="324" rx="20" fill="#101712" stroke="#273229"/>
   <path d="M250 596H700V652H250zM806 522H1100V578H806zM1182 522H1328V718H1182z" fill="#163126"/>
   <text x="800" y="340" fill="#EEF4EF" font-family="Arial, sans-serif" font-size="64" text-anchor="middle">Replace With Your Map Demo</text>
-  <text x="800" y="418" fill="#9AA9A0" font-family="Arial, sans-serif" font-size="34" text-anchor="middle">Suggested file: assets/demo/map-demo.svg or swap to .png/.jpg in the HTML</text>
+  <text x="800" y="418" fill="#9AA9A0" font-family="Arial, sans-serif" font-size="34" text-anchor="middle">Suggested file: demo/map-demo.svg or swap to .png/.jpg in the HTML</text>
 </svg>
