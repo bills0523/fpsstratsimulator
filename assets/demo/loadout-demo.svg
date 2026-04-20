@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <rect width="1600" height="900" fill="#101712"/>
+  <rect x="40" y="40" width="1520" height="820" rx="28" fill="#15201A" stroke="#273229" stroke-width="4"/>
+  <circle cx="398" cy="492" r="62" fill="#0E1411" stroke="#FF4655" stroke-width="8"/>
+  <circle cx="572" cy="396" r="62" fill="#0E1411" stroke="#00FF88" stroke-width="8"/>
+  <circle cx="814" cy="536" r="82" fill="rgba(0,255,136,.2)" stroke="#00FF88" stroke-width="8"/>
+  <rect x="1010" y="472" width="272" height="18" rx="9" fill="#FF4655"/>
+  <circle cx="1312" cy="404" r="20" fill="#CCFF00"/>
+  <path d="M1138 624H1258V666H1138z" fill="#00FF88"/>
+  <path d="M1208 666H1240V714H1208z" fill="#00FF88"/>
+  <text x="800" y="160" fill="#EEF4EF" font-family="Arial, sans-serif" font-size="64" text-anchor="middle">Replace With Your Agent / Weapon / Utility Demo</text>
+  <text x="800" y="234" fill="#9AA9A0" font-family="Arial, sans-serif" font-size="34" text-anchor="middle">Suggested file: assets/demo/loadout-demo.svg</text>
+</svg>

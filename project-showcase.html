@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FPS Strat Simulator Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="project-showcase.css" />
+  </head>
+  <body>
+    <main class="showcase-page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Tactical Strategy Sandbox</p>
+          <h1>Plan, place, test, and visualize a full round before it happens.</h1>
+          <p class="hero-text">
+            FPS Strat Simulator is a one-page tactical planning workspace for 2D
+            shooter scenarios. It combines interactive map control, agent and utility
+            placement, live vision modeling, and combat simulation into a single tool.
+          </p>
+          <div class="hero-points">
+            <span>Simulation Engine</span>
+            <span>Interactive Maps</span>
+            <span>Agent Loadouts</span>
+            <span>Drawing + Planning Tools</span>
+            <span>Dynamic Vision Cones</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-chip">Project Scope</div>
+          <ul class="panel-list">
+            <li>Map navigation with pan and zoom</li>
+            <li>Agent placement with weapon assignment</li>
+            <li>Utility placement and tactical markup tools</li>
+            <li>Image-derived vision collision engine</li>
+            <li>Probabilistic combat resolution backend</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="intro-grid">
+        <article class="info-card">
+          <h2>The Simulation</h2>
+          <p>
+            The backend resolves combat using a tick-based model. Weapon class,
+            positioning, side advantage, utility overlap, and line disruption all feed
+            into the combat power calculation.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Map Design</h2>
+          <p>
+            Multiple tactical maps can be swapped from the dropdown. Changing the map
+            resets live objects, drawings, and vision state so each plan starts clean.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Agent Placement</h2>
+          <p>
+            Agents can be dropped onto the board, assigned weapons, moved by side, and
+            combined with utilities to model team setups and site hits.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Tooling</h2>
+          <p>
+            Pen, eraser, text, spike, ping, and vision tools turn the map into a
+            planning canvas for rotations, executes, defaults, and retakes.
+          </p>
+        </article>
+      </section>
+
+      <section class="demo-section">
+        <div class="section-heading">
+          <p class="eyebrow">Demo Surfaces</p>
+          <h2>Replace these placeholders with your own screenshots.</h2>
+          <p>
+            The page is already wired for three visual showcases. Replace the files in
+            `assets/demo/` with your own images while keeping the filenames the same.
+          </p>
+        </div>
+
+        <div class="demo-stack">
+          <article class="demo-card demo-card-wide">
+            <div class="demo-copy">
+              <p class="demo-tag">Map Showcase</p>
+              <h3>Demonstrate the map workspace and overview layout.</h3>
+              <p>
+                Use this area for a full tactical map screenshot that shows the board,
+                side context, and planning environment.
+              </p>
+              <code>assets/demo/map-demo.svg</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="assets/demo/map-demo.svg"
+                alt="Placeholder for map demonstration image"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Vision Cone</p>
+              <h3>Show the raycast-based cone system against the map.</h3>
+              <p>
+                Use a screenshot that highlights cone direction, occlusion, and how the
+                visibility polygon reacts to geometry.
+              </p>
+              <code>assets/demo/vision-cone-demo.svg</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="assets/demo/vision-cone-demo.svg"
+                alt="Placeholder for vision cone demonstration image"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Agents + Weapons + Utilities</p>
+              <h3>Present loadouts, tokens, and utility placement in one frame.</h3>
+              <p>
+                This slot is meant for an image showing agents on the board alongside
+                weapons, utilities, or planning tools working together.
+              </p>
+              <code>assets/demo/loadout-demo.svg</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="assets/demo/loadout-demo.svg"
+                alt="Placeholder for agent, weapon, and utility demonstration image"
+              />
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="footer-banner">
+        <p class="eyebrow">Project Summary</p>
+        <h2>
+          A planning surface for maps, agents, utilities, and vision that connects
+          directly to the simulation layer.
+        </h2>
+      </section>
+    </main>
+  </body>
+</html>
