@@ -27,7 +27,9 @@ body {
     radial-gradient(circle at 84% 18%, rgba(0, 217, 255, 0.14), transparent 20%),
     radial-gradient(circle at 50% 120%, rgba(10, 47, 102, 0.4), transparent 34%),
     linear-gradient(180deg, #02050a 0%, #050b14 42%, var(--bg) 100%);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Manrope", sans-serif;
+  word-spacing: 0.12em;
+  line-height: 1.2;
 }
 
 .showcase-page {
@@ -81,7 +83,7 @@ body {
   margin: 0 0 12px;
   color: var(--cyan);
   font-size: 12px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
@@ -120,8 +122,9 @@ h3 {
 .demo-copy p,
 .section-heading p {
   color: var(--muted);
-  line-height: 1.65;
+  line-height: 1.98;
   font-size: 0.98rem;
+  word-spacing: 0.12em;
 }
 
 .hero-text {
@@ -150,13 +153,14 @@ code {
 .hero-points span {
   color: #d8e7da;
   font-size: 0.85rem;
+  word-spacing: 0.1em;
 }
 
 .panel-list {
   list-style: none;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   margin-top: 18px;
 }
 
@@ -191,7 +195,7 @@ code {
 
 .info-card h2 {
   font-size: 2.1rem;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .demo-section {
@@ -204,7 +208,7 @@ code {
 
 .section-heading p:last-child {
   max-width: 68ch;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .demo-stack {
@@ -226,7 +230,7 @@ code {
 .demo-copy {
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: 14px;
 }
 
 code {
