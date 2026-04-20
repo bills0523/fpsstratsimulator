@@ -23,7 +23,13 @@
         <section class="sidebar-section">
           <div class="section-title">Map Selection</div>
           <div class="map-card">
-            <div class="map-preview">BIND</div>
+            <div class="map-select" id="map-select">
+              <button class="map-preview" id="map-preview" type="button">
+                <span id="map-preview-label">BIND</span>
+                <span class="map-preview-caret" aria-hidden="true"></span>
+              </button>
+              <div class="map-dropdown" id="map-dropdown"></div>
+            </div>
             <div class="map-toggle">
               <button class="toggle active">Attack</button>
               <button class="toggle">Defend</button>
@@ -32,56 +38,89 @@
         </section>
 
         <section class="sidebar-section">
-          <div class="section-title">Sequence</div>
-          <!-- Placeholder buttons for scripted step sequencing. -->
-          <button class="secondary wide">SEQ. Tutorial</button>
-          <div class="sequence-grid">
-            <button class="seq">1</button>
-            <button class="seq">2</button>
-            <button class="seq">3</button>
-            <button class="seq">4</button>
-            <button class="seq">5</button>
-            <button class="seq">6</button>
-            <button class="seq">7</button>
-            <button class="seq">8</button>
-            <button class="seq">9</button>
-            <button class="seq">10</button>
-          </div>
-          <button class="secondary wide">Audio</button>
-        </section>
-
-        <section class="sidebar-section">
-          <div class="section-title">Delete</div>
-          <!-- Quick delete actions for strategy steps and assets. -->
-          <button class="danger wide">Everything</button>
-          <button class="secondary wide">Sequence Step 1</button>
-          <div class="mini-icons">
-            <div class="mini-icon"></div>
-            <div class="mini-icon"></div>
-            <div class="mini-icon"></div>
-            <div class="mini-icon"></div>
-          </div>
-        </section>
-
-        <section class="sidebar-section">
           <div class="section-title">Tools</div>
-          <!-- Toolbox area for placing utilities or tactical markers. -->
-          <div class="tools-grid">
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
-            <button class="tool"></button>
+          <div class="toolbar-grid" id="toolbar-grid">
+            <button class="tool-btn active" data-tool="pen" title="Pen">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M5 16.5 15.8 5.7l2.5 2.5L7.5 19H5v-2.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+              <span>Pen</span>
+            </button>
+            <button class="tool-btn" data-tool="eraser" title="Eraser">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m8 6 8 8-4 4H6l-2-2 8-10Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+              <span>Eraser</span>
+            </button>
+            <button class="tool-btn" data-tool="text" title="Text">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 6h12M12 6v12M8 18h8"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+              <span>Text</span>
+            </button>
+            <button class="tool-btn" data-tool="spike" title="Plant Spike">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 3 7 9v8l5 4 5-4V9l-5-6Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+              <span>Spike</span>
+            </button>
+            <div class="tool-group">
+              <button class="tool-btn" data-tool="vision" title="Vision Cone">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M6 18c0-7.5 3-12 6-12s6 4.5 6 12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="1.8"
+                  />
+                  <circle cx="12" cy="18" r="2" fill="currentColor" />
+                </svg>
+                <span>Vision</span>
+              </button>
+              <div class="tool-submenu" id="vision-submenu">
+                <button class="tool-suboption active" data-cone="small">Small</button>
+                <button class="tool-suboption" data-cone="medium">Medium</button>
+                <button class="tool-suboption" data-cone="large">Large</button>
+              </div>
+            </div>
+            <button class="tool-btn" data-tool="ping" title="Ping">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 21c4-4.5 6-7.6 6-10.5a6 6 0 1 0-12 0C6 13.4 8 16.5 12 21Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+                <circle cx="12" cy="10.5" r="2" fill="currentColor" />
+              </svg>
+              <span>Ping</span>
+            </button>
           </div>
         </section>
       </aside>
@@ -103,7 +142,20 @@
           <!-- Trash target: drop tokens here to delete them. -->
           <button class="map-trash" id="map-trash" title="Delete token">🗑</button>
           <div class="map-wrapper" id="map-wrapper">
-            <img class="map-image" src="assets/maps/Map Bind.png" alt="Bind map" />
+            <img
+              class="map-image"
+              id="map-image"
+              src="assets/maps/Map Bind.png"
+              alt="Bind map"
+            />
+            <svg
+              class="vision-layer"
+              id="vision-layer"
+              viewBox="0 0 1000 1000"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            ></svg>
+            <canvas class="drawing-layer" id="drawing-layer"></canvas>
           </div>
         </div>
       </main>
@@ -181,27 +233,42 @@
         <span class="weapon-icon weapon-sniper"></span>
       </button>
     </div>
-    <script>
-      // DOM handles used by the token placement + drag logic below.
+    <script type="module">
+      import { VisionEngine } from "./visionEngine.js";
+
       const mapCanvas = document.getElementById("map-canvas");
       const mapWrapper = document.getElementById("map-wrapper");
       const mapTrash = document.getElementById("map-trash");
+      const mapImage = document.getElementById("map-image");
+      const mapSelect = document.getElementById("map-select");
+      const mapPreview = document.getElementById("map-preview");
+      const mapPreviewLabel = document.getElementById("map-preview-label");
+      const mapDropdown = document.getElementById("map-dropdown");
+      const drawingLayer = document.getElementById("drawing-layer");
+      const drawingCtx = drawingLayer.getContext("2d");
+      const visionLayer = document.getElementById("vision-layer");
       const agentIcons = document.querySelectorAll(".agent-icon");
       const utilityPopover = document.getElementById("utility-popover");
       const agentRoster = document.getElementById("agent-roster");
       const sideToggles = document.querySelectorAll(".map-toggle .toggle");
       const weaponPopover = document.getElementById("weapon-popover");
       const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
+      const toolButtons = document.querySelectorAll(".tool-btn");
+      const visionSuboptions = document.querySelectorAll(".tool-suboption");
+      const visionEngine = new VisionEngine();
 
-      // Drag state for the currently active map token.
       let activeToken = null;
       let dragOffsetX = 0;
       let dragOffsetY = 0;
+      let activeRotationCone = null;
       let popoverHideTimer = null;
       let activeAgentId = null;
+      let activeWeaponToken = null;
       let currentSide = "attack";
+      let currentTool = "pen";
+      let currentVisionCone = "small";
+      let currentMap = "Bind";
 
-      // Pan/zoom state for the map viewport.
       let panX = 0;
       let panY = 0;
       let zoom = 1;
@@ -211,9 +278,28 @@
       let panOriginX = 0;
       let panOriginY = 0;
       let spacePressed = false;
-      let activeWeaponToken = null;
+      let suppressMapClick = false;
 
-      // Agent -> 4 utility definitions (name + CSS type class).
+      let isDrawing = false;
+      let currentStroke = null;
+      let eraserActive = false;
+      const drawnStrokes = [];
+
+      const conePresets = {
+        small: { spread: 31.5, range: 72 },
+        medium: { spread: 52.5, range: 112 },
+        large: { spread: 77, range: 144 },
+      };
+
+      const availableMaps = [
+        { name: "Bind", src: "assets/maps/Map Bind.png" },
+        { name: "Breeze", src: "assets/maps/breeze.png" },
+        { name: "Fracture", src: "assets/maps/fracture.png" },
+        { name: "Haven", src: "assets/maps/haven.png" },
+        { name: "Lotus", src: "assets/maps/lotus.png" },
+        { name: "Pearl", src: "assets/maps/pearl.png" },
+      ];
+
       const agentUtilities = {
         astra: [
           { name: "Nebula", type: "util-sphere" },
@@ -397,7 +483,6 @@
         ],
       };
 
-      // Keep token movement inside the map canvas bounds.
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
@@ -408,15 +493,16 @@
 
       function screenToMap(clientX, clientY) {
         const canvasRect = mapCanvas.getBoundingClientRect();
-        const x = (clientX - canvasRect.left - panX) / zoom;
-        const y = (clientY - canvasRect.top - panY) / zoom;
-        return { x, y };
+        return {
+          x: (clientX - canvasRect.left - panX) / zoom,
+          y: (clientY - canvasRect.top - panY) / zoom,
+        };
       }
 
       function getMapSize() {
         return {
-          width: mapWrapper.offsetWidth,
-          height: mapWrapper.offsetHeight,
+          width: mapCanvas.clientWidth,
+          height: mapCanvas.clientHeight,
         };
       }
 
@@ -425,91 +511,103 @@
         return { width: rect.width / zoom, height: rect.height / zoom };
       }
 
-      // Create a draggable token in the center of the map from a roster icon.
-      function createTokenFromIcon(icon) {
-        const token = document.createElement("div");
-        token.className = "map-agent-token";
-        token.dataset.anchor = "topleft";
-        token.dataset.side = currentSide;
-        token.dataset.weapon = "3";
-        token.style.backgroundImage = `url("${icon.src}")`;
-        token.setAttribute("aria-label", icon.alt || "Agent");
-
-        const badge = document.createElement("span");
-        badge.className = "weapon-badge";
-        badge.dataset.weapon = "3";
-        const badgeIcon = document.createElement("span");
-        badgeIcon.className = "weapon-icon";
-        badge.appendChild(badgeIcon);
-        token.appendChild(badge);
-
-        const rect = mapCanvas.getBoundingClientRect();
-        const center = screenToMap(
-          rect.left + rect.width / 2,
-          rect.top + rect.height / 2
-        );
-        const size = 40;
-        const left = center.x - size / 2;
-        const top = center.y - size / 2;
-
-        token.style.left = `${left}px`;
-        token.style.top = `${top}px`;
-
-        // Start dragging and capture the pointer offset within the token.
-        token.addEventListener("mousedown", (event) => {
-          if (spacePressed || event.button === 1) return;
-          activeToken = token;
-          const cursor = screenToMap(event.clientX, event.clientY);
-          dragOffsetX = cursor.x - parseFloat(token.style.left);
-          dragOffsetY = cursor.y - parseFloat(token.style.top);
-          token.style.cursor = "grabbing";
-        });
-
-        token.addEventListener("contextmenu", (event) => {
-          event.preventDefault();
-          showWeaponPopover(token, event.clientX, event.clientY);
-        });
-
-        token.addEventListener("dblclick", (event) => {
-          showWeaponPopover(token, event.clientX, event.clientY);
-        });
-
-        mapWrapper.appendChild(token);
+      function initializeVisionMap() {
+        const { width, height } = getMapSize();
+        if (!width || !height || !mapImage.complete) return;
+        visionEngine.initializeMap(mapImage, width, height);
+        renderVisionCones();
       }
 
-      // Create a utility element on the map, centered in the viewport.
-      function createUtilityOnMap(utilityType, event) {
-        const util = document.createElement("div");
-        util.className = `map-utility ${utilityType}`;
-        util.dataset.utilityType = utilityType;
-        util.dataset.anchor = "center";
-        util.dataset.side = currentSide;
+      function setLayerSizes() {
+        const { width, height } = getMapSize();
+        drawingLayer.width = width;
+        drawingLayer.height = height;
+        visionLayer.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        redrawDrawingLayer();
+        initializeVisionMap();
+      }
 
-        util.addEventListener("mousedown", (mouseEvent) => {
-          if (spacePressed || mouseEvent.button === 1) return;
-          activeToken = util;
-          const cursor = screenToMap(mouseEvent.clientX, mouseEvent.clientY);
-          dragOffsetX = cursor.x - parseFloat(util.style.left);
-          dragOffsetY = cursor.y - parseFloat(util.style.top);
-          util.style.cursor = "grabbing";
+      function clearCurrentMapState() {
+        activeToken = null;
+        activeRotationCone = null;
+        isDrawing = false;
+        eraserActive = false;
+        currentStroke = null;
+        panX = 0;
+        panY = 0;
+        zoom = 1;
+        mapTrash.classList.remove("active");
+        utilityPopover.classList.remove("active");
+        utilityPopover.setAttribute("aria-hidden", "true");
+        hideWeaponPopover();
+        drawnStrokes.length = 0;
+        redrawDrawingLayer();
+        visionLayer.innerHTML = "";
+        mapWrapper
+          .querySelectorAll(
+            ".map-agent-token, .map-utility, .map-note, .map-spike, .map-ping, .vision-origin"
+          )
+          .forEach((element) => element.remove());
+        applyMapTransform();
+      }
+
+      function renderMapOptions() {
+        mapDropdown.innerHTML = "";
+        availableMaps.forEach((mapOption) => {
+          const button = document.createElement("button");
+          button.className = "map-option";
+          button.type = "button";
+          button.textContent = mapOption.name;
+          button.classList.toggle("active", mapOption.name === currentMap);
+          button.addEventListener("click", () => {
+            setCurrentMap(mapOption.name);
+          });
+          mapDropdown.appendChild(button);
         });
+      }
 
-        mapWrapper.appendChild(util);
+      function setCurrentMap(name) {
+        const nextMap = availableMaps.find((mapOption) => mapOption.name === name);
+        if (!nextMap) return;
+        clearCurrentMapState();
+        currentMap = nextMap.name;
+        mapPreviewLabel.textContent = nextMap.name.toUpperCase();
+        mapImage.src = nextMap.src;
+        mapImage.alt = `${nextMap.name} map`;
+        mapSelect.classList.remove("open");
+        renderMapOptions();
+        setLayerSizes();
+      }
 
-        // Position the element at the center of the map canvas.
-        const canvasRect = mapCanvas.getBoundingClientRect();
-        const mapCenter = screenToMap(
-          canvasRect.left + canvasRect.width / 2,
-          canvasRect.top + canvasRect.height / 2
-        );
-        const utilSize = getElementSizeInMap(util);
-        const halfW = utilSize.width / 2;
-        const halfH = utilSize.height / 2;
-        const mapSize = getMapSize();
-        const clampedCenterX = clamp(mapCenter.x, halfW, mapSize.width - halfW);
-        const clampedCenterY = clamp(mapCenter.y, halfH, mapSize.height - halfH);
-        util.style.left = `${clampedCenterX}px`;
-        util.style.top = `${clampedCenterY}px`;
+      function getAgentIdFromIcon(icon) {
+        const src = icon.getAttribute("src") || "";
+        return (src.split("/").pop() || "").toLowerCase().replace(".png", "");
+      }
+
+      function getTeamStrokeColor(side) {
+        return side === "attack" ? "#ff4655" : "#f5f7f6";
+      }
+
+      function setCurrentTool(tool) {
+        currentTool = tool;
+        toolButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.tool === tool);
+        });
+        drawingLayer.style.pointerEvents =
+          tool === "pen" || tool === "eraser" ? "auto" : "none";
+        mapCanvas.style.cursor =
+          tool === "pen" || tool === "eraser"
+            ? "crosshair"
+            : spacePressed
+              ? "grab"
+              : "";
+      }
+
+      function setVisionConeSize(size) {
+        currentVisionCone = size;
+        visionSuboptions.forEach((option) => {
+          option.classList.toggle("active", option.dataset.cone === size);
+        });
       }
 
       function renderUtilityPopover(agentId) {
@@ -526,12 +624,10 @@
             .join("")
             .slice(0, 2)
             .toUpperCase();
-
           button.addEventListener("mousedown", (event) => {
             event.preventDefault();
-            createUtilityOnMap(util.type, event);
+            createUtilityOnMap(util.type);
           });
-
           utilityPopover.appendChild(button);
         });
       }
@@ -543,19 +639,20 @@
         renderUtilityPopover(agentId);
         utilityPopover.classList.add("active");
         utilityPopover.setAttribute("aria-hidden", "false");
-
         const iconRect = icon.getBoundingClientRect();
         const popoverRect = utilityPopover.getBoundingClientRect();
-        const rawLeft = iconRect.left + iconRect.width / 2 - popoverRect.width / 2;
-        const rawTop = iconRect.top - popoverRect.height;
-        const safeLeft = clamp(
-          rawLeft,
+        const left = clamp(
+          iconRect.left + iconRect.width / 2 - popoverRect.width / 2,
           8,
           window.innerWidth - popoverRect.width - 8
         );
-        const safeTop = clamp(rawTop, 8, window.innerHeight - popoverRect.height - 8);
-        utilityPopover.style.left = `${safeLeft}px`;
-        utilityPopover.style.top = `${safeTop}px`;
+        const top = clamp(
+          iconRect.top - popoverRect.height,
+          8,
+          window.innerHeight - popoverRect.height - 8
+        );
+        utilityPopover.style.left = `${left}px`;
+        utilityPopover.style.top = `${top}px`;
       }
 
       function schedulePopoverHide() {
@@ -568,16 +665,9 @@
       }
 
       function cancelPopoverHide() {
-        if (popoverHideTimer) {
-          clearTimeout(popoverHideTimer);
-          popoverHideTimer = null;
-        }
-      }
-
-      function getAgentIdFromIcon(icon) {
-        const src = icon.getAttribute("src") || "";
-        const fileName = src.split("/").pop() || "";
-        return fileName.toLowerCase().replace(".png", "");
+        if (!popoverHideTimer) return;
+        clearTimeout(popoverHideTimer);
+        popoverHideTimer = null;
       }
 
       function isMovingToPopover(event) {
@@ -588,40 +678,13 @@
         return event.relatedTarget && event.relatedTarget.classList?.contains("agent-icon");
       }
 
-      // Spawn a token when a roster icon is clicked.
-      agentIcons.forEach((icon) => {
-        icon.dataset.agentId = getAgentIdFromIcon(icon);
-
-        icon.addEventListener("click", () => {
-          createTokenFromIcon(icon);
-        });
-
-        icon.addEventListener("mouseenter", () => {
-          cancelPopoverHide();
-          showUtilityPopover(icon);
-        });
-
-        icon.addEventListener("mouseleave", (event) => {
-          if (isMovingToPopover(event)) return;
-          schedulePopoverHide();
-        });
-      });
-
-      utilityPopover.addEventListener("mouseenter", cancelPopoverHide);
-      utilityPopover.addEventListener("mouseleave", (event) => {
-        if (isMovingToAgent(event)) return;
-        schedulePopoverHide();
-      });
-
       function showWeaponPopover(token, clientX, clientY) {
         activeWeaponToken = token;
         weaponPopover.classList.add("active");
         weaponPopover.setAttribute("aria-hidden", "false");
         const popRect = weaponPopover.getBoundingClientRect();
-        const left = clamp(clientX + 8, 8, window.innerWidth - popRect.width - 8);
-        const top = clamp(clientY - popRect.height / 2, 8, window.innerHeight - popRect.height - 8);
-        weaponPopover.style.left = `${left}px`;
-        weaponPopover.style.top = `${top}px`;
+        weaponPopover.style.left = `${clamp(clientX + 8, 8, window.innerWidth - popRect.width - 8)}px`;
+        weaponPopover.style.top = `${clamp(clientY - popRect.height / 2, 8, window.innerHeight - popRect.height - 8)}px`;
       }
 
       function hideWeaponPopover() {
@@ -630,43 +693,224 @@
         activeWeaponToken = null;
       }
 
-      weaponOptions.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!activeWeaponToken) return;
-          const weapon = btn.dataset.weapon;
-          activeWeaponToken.dataset.weapon = weapon;
-          const badge = activeWeaponToken.querySelector(".weapon-badge");
-          if (badge) badge.dataset.weapon = weapon;
-          hideWeaponPopover();
-        });
-      });
-
-      document.addEventListener("click", (event) => {
-        if (!weaponPopover.classList.contains("active")) return;
-        if (weaponPopover.contains(event.target)) return;
-        if (activeWeaponToken && activeWeaponToken.contains(event.target)) return;
-        hideWeaponPopover();
-      });
-
-      // Side toggle (attack/defend) updates global state and UI theme.
-      function setSide(side) {
-        currentSide = side;
-        document.body.dataset.side = side;
-        sideToggles.forEach((btn) => {
-          btn.classList.toggle("active", btn.dataset.side === side);
+      function attachDragBehavior(element, anchor = "center", onMove = null) {
+        element.dataset.anchor = anchor;
+        element.addEventListener("mousedown", (event) => {
+          if (spacePressed || event.button === 1) return;
+          if (event.target.closest(".vision-rotate-handle")) return;
+          suppressMapClick = true;
+          activeToken = element;
+          const cursor = screenToMap(event.clientX, event.clientY);
+          dragOffsetX = cursor.x - parseFloat(element.style.left || "0");
+          dragOffsetY = cursor.y - parseFloat(element.style.top || "0");
+          element.style.cursor = "grabbing";
+          element.dataset.moveHandler = onMove ? "true" : "false";
+          element._moveHandler = onMove;
         });
       }
 
-      sideToggles.forEach((btn) => {
-        const label = btn.textContent.trim().toLowerCase();
-        btn.dataset.side = label === "attack" ? "attack" : "defense";
-        btn.addEventListener("click", () => {
-          setSide(btn.dataset.side);
+      function createAgentToken(icon) {
+        const token = document.createElement("div");
+        token.className = "map-agent-token";
+        token.dataset.side = currentSide;
+        token.dataset.weapon = "3";
+        token.style.backgroundImage = `url("${icon.src}")`;
+        token.setAttribute("aria-label", icon.alt || "Agent");
+        const badge = document.createElement("span");
+        badge.className = "weapon-badge";
+        badge.dataset.weapon = "3";
+        const badgeIcon = document.createElement("span");
+        badgeIcon.className = "weapon-icon";
+        badge.appendChild(badgeIcon);
+        token.appendChild(badge);
+        const { width, height } = getMapSize();
+        token.style.left = `${width / 2 - 20}px`;
+        token.style.top = `${height / 2 - 20}px`;
+        token.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          showWeaponPopover(token, event.clientX, event.clientY);
         });
-      });
+        token.addEventListener("dblclick", (event) => {
+          showWeaponPopover(token, event.clientX, event.clientY);
+        });
+        attachDragBehavior(token, "topleft");
+        mapWrapper.appendChild(token);
+      }
 
-      setSide(currentSide);
-      applyMapTransform();
+      function createUtilityOnMap(utilityType) {
+        const util = document.createElement("div");
+        util.className = `map-utility ${utilityType}`;
+        util.dataset.utilityType = utilityType;
+        util.dataset.side = currentSide;
+        const { width, height } = getMapSize();
+        util.style.left = `${width / 2}px`;
+        util.style.top = `${height / 2}px`;
+        attachDragBehavior(util, "center");
+        mapWrapper.appendChild(util);
+      }
+
+      function createTextNote(x, y) {
+        const note = document.createElement("div");
+        note.className = "map-note";
+        note.contentEditable = "true";
+        note.dataset.side = currentSide;
+        note.textContent = "New callout";
+        note.style.left = `${x}px`;
+        note.style.top = `${y}px`;
+        attachDragBehavior(note, "topleft");
+        note.addEventListener("dblclick", () => {
+          note.focus();
+        });
+        note.addEventListener("blur", () => {
+          if (!note.textContent.trim()) note.remove();
+        });
+        mapWrapper.appendChild(note);
+        requestAnimationFrame(() => note.focus());
+      }
+
+      function createSpikeMarker(x, y) {
+        const spike = document.createElement("div");
+        spike.className = "map-spike";
+        spike.dataset.side = currentSide;
+        spike.style.left = `${x}px`;
+        spike.style.top = `${y}px`;
+        attachDragBehavior(spike, "center");
+        mapWrapper.appendChild(spike);
+      }
+
+      function createPingMarker(x, y) {
+        const ping = document.createElement("div");
+        ping.className = "map-ping";
+        ping.dataset.side = currentSide;
+        ping.style.left = `${x}px`;
+        ping.style.top = `${y}px`;
+        attachDragBehavior(ping, "center");
+        mapWrapper.appendChild(ping);
+      }
+
+      function createVisionEmitter(x, y) {
+        const emitter = document.createElement("div");
+        emitter.className = "vision-origin";
+        emitter.dataset.side = currentSide;
+        emitter.dataset.cone = currentVisionCone;
+        emitter.dataset.angle = "0";
+        emitter.style.left = `${x}px`;
+        emitter.style.top = `${y}px`;
+        const handle = document.createElement("button");
+        handle.className = "vision-rotate-handle";
+        handle.type = "button";
+        handle.addEventListener("mousedown", (event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          activeRotationCone = emitter;
+        });
+        emitter.appendChild(handle);
+        attachDragBehavior(emitter, "center", renderVisionCones);
+        mapWrapper.appendChild(emitter);
+        renderVisionCones();
+      }
+
+      function getMapCenterPoint() {
+        const { width, height } = getMapSize();
+        return { x: width / 2, y: height / 2 };
+      }
+
+      function redrawDrawingLayer() {
+        drawingCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
+        drawnStrokes.forEach((stroke) => {
+          if (stroke.points.length < 2) return;
+          drawingCtx.beginPath();
+          drawingCtx.lineWidth = stroke.width;
+          drawingCtx.lineCap = "round";
+          drawingCtx.lineJoin = "round";
+          drawingCtx.strokeStyle = stroke.color;
+          drawingCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
+          stroke.points.slice(1).forEach((point) => drawingCtx.lineTo(point.x, point.y));
+          drawingCtx.stroke();
+        });
+      }
+
+      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+        const abx = bx - ax;
+        const aby = by - ay;
+        const abSquared = abx * abx + aby * aby;
+        if (!abSquared) return Math.hypot(px - ax, py - ay);
+        const t = clamp(((px - ax) * abx + (py - ay) * aby) / abSquared, 0, 1);
+        const closestX = ax + abx * t;
+        const closestY = ay + aby * t;
+        return Math.hypot(px - closestX, py - closestY);
+      }
+
+      function eraseStrokeAt(x, y) {
+        const hitIndex = drawnStrokes.findIndex((stroke) =>
+          stroke.points.some((point, index) => {
+            if (index === 0) return false;
+            const prev = stroke.points[index - 1];
+            return pointToSegmentDistance(x, y, prev.x, prev.y, point.x, point.y) <= 8;
+          })
+        );
+        if (hitIndex >= 0) {
+          drawnStrokes.splice(hitIndex, 1);
+          redrawDrawingLayer();
+        }
+      }
+
+      function renderVisionCones() {
+        visionLayer.innerHTML = "";
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        visionLayer.appendChild(defs);
+        const emitters = mapWrapper.querySelectorAll(".vision-origin");
+
+        emitters.forEach((emitter, index) => {
+          const origin = {
+            x: parseFloat(emitter.style.left),
+            y: parseFloat(emitter.style.top),
+          };
+          const angle = parseFloat(emitter.dataset.angle || "0");
+          const coneType = emitter.dataset.cone || "medium";
+          const preset = conePresets[coneType];
+          const rayPoints = visionEngine.calculateCone(
+            origin.x,
+            origin.y,
+            angle,
+            coneType
+          );
+          const points = [origin, ...rayPoints];
+          const gradient = document.createElementNS("http://www.w3.org/2000/svg", "radialGradient");
+          gradient.id = `vision-gradient-${index}`;
+          gradient.setAttribute("gradientUnits", "userSpaceOnUse");
+          gradient.setAttribute("cx", `${origin.x}`);
+          gradient.setAttribute("cy", `${origin.y}`);
+          gradient.setAttribute("r", `${preset.range}`);
+          [
+            { offset: "0%", color: "#ffffff", opacity: "0.22" },
+            { offset: "55%", color: "#96beff", opacity: "0.18" },
+            { offset: "100%", color: "#96beff", opacity: "0" },
+          ].forEach((stopConfig) => {
+            const stop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop.setAttribute("offset", stopConfig.offset);
+            stop.setAttribute("stop-color", stopConfig.color);
+            stop.setAttribute("stop-opacity", stopConfig.opacity);
+            gradient.appendChild(stop);
+          });
+          defs.appendChild(gradient);
+
+          const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+          const validPoints = points.filter(
+            (point) => Number.isFinite(point.x) && Number.isFinite(point.y)
+          );
+          if (validPoints.length < 3) return;
+          polygon.setAttribute(
+            "points",
+            validPoints.map((point) => `${point.x},${point.y}`).join(" ")
+          );
+          polygon.setAttribute("fill", `url(#${gradient.id})`);
+          polygon.setAttribute("stroke", "rgba(220,236,255,0.38)");
+          polygon.setAttribute("stroke-width", "1");
+          polygon.setAttribute("fill-rule", "nonzero");
+          visionLayer.appendChild(polygon);
+        });
+      }
 
       function buildSimulationPayload() {
         const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map(
@@ -679,37 +923,229 @@
           })
         );
 
-        const utilities = Array.from(mapWrapper.querySelectorAll(".map-utility")).map(
-          (util, idx) => ({
-            id: `util_${idx}`,
-            type: util.dataset.utilityType || "util-sphere",
-            x: parseFloat(util.style.left),
-            y: parseFloat(util.style.top),
-            radius: 0,
-            side: util.dataset.side || "attack",
-          })
-        );
+        const utilities = Array.from(
+          mapWrapper.querySelectorAll(".map-utility, .map-spike, .map-ping, .vision-origin")
+        ).map((util, index) => ({
+          id: `util_${index}`,
+          type: util.dataset.utilityType || util.className.split(" ")[0] || "utility",
+          x: parseFloat(util.style.left),
+          y: parseFloat(util.style.top),
+          radius: 0,
+          side: util.dataset.side || "attack",
+        }));
 
         return {
-          map: "Bind",
+          map: currentMap,
           created_at: new Date().toISOString(),
           players,
           utilities,
         };
       }
 
-      // Pan controls: space + drag or middle mouse.
+      function setSide(side) {
+        currentSide = side;
+        document.body.dataset.side = side;
+        sideToggles.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.side === side);
+        });
+      }
+
+      sideToggles.forEach((btn) => {
+        const label = btn.textContent.trim().toLowerCase();
+        btn.dataset.side = label === "attack" ? "attack" : "defense";
+        btn.addEventListener("click", () => setSide(btn.dataset.side));
+      });
+
+      toolButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const tool = button.dataset.tool;
+          setCurrentTool(tool);
+          const center = getMapCenterPoint();
+          if (tool === "ping") createPingMarker(center.x, center.y);
+          if (tool === "text") createTextNote(center.x, center.y);
+          if (tool === "spike") createSpikeMarker(center.x, center.y);
+          if (tool === "vision") createVisionEmitter(center.x, center.y);
+        });
+      });
+
+      visionSuboptions.forEach((option) => {
+        option.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setVisionConeSize(option.dataset.cone);
+          setCurrentTool("vision");
+        });
+      });
+
+      weaponOptions.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (!activeWeaponToken) return;
+          const weapon = btn.dataset.weapon;
+          activeWeaponToken.dataset.weapon = weapon;
+          const badge = activeWeaponToken.querySelector(".weapon-badge");
+          if (badge) badge.dataset.weapon = weapon;
+          hideWeaponPopover();
+        });
+      });
+
+      agentIcons.forEach((icon) => {
+        icon.dataset.agentId = getAgentIdFromIcon(icon);
+        icon.addEventListener("click", () => createAgentToken(icon));
+        icon.addEventListener("mouseenter", () => {
+          cancelPopoverHide();
+          showUtilityPopover(icon);
+        });
+        icon.addEventListener("mouseleave", (event) => {
+          if (!isMovingToPopover(event)) schedulePopoverHide();
+        });
+      });
+
+      utilityPopover.addEventListener("mouseenter", cancelPopoverHide);
+      utilityPopover.addEventListener("mouseleave", (event) => {
+        if (!isMovingToAgent(event)) schedulePopoverHide();
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!mapSelect.contains(event.target)) {
+          mapSelect.classList.remove("open");
+        }
+        if (
+          weaponPopover.classList.contains("active") &&
+          !weaponPopover.contains(event.target) &&
+          !(activeWeaponToken && activeWeaponToken.contains(event.target))
+        ) {
+          hideWeaponPopover();
+        }
+      });
+
+      mapPreview.addEventListener("click", () => {
+        mapSelect.classList.toggle("open");
+      });
+
+      drawingLayer.addEventListener("mousedown", (event) => {
+        if (currentTool !== "pen" && currentTool !== "eraser") return;
+        const point = screenToMap(event.clientX, event.clientY);
+
+        if (currentTool === "pen") {
+          isDrawing = true;
+          currentStroke = {
+            points: [point],
+            width: 3,
+            color: getTeamStrokeColor(currentSide),
+          };
+          drawnStrokes.push(currentStroke);
+          redrawDrawingLayer();
+        } else {
+          eraserActive = true;
+          eraseStrokeAt(point.x, point.y);
+        }
+      });
+
+      drawingLayer.addEventListener("mousemove", (event) => {
+        const point = screenToMap(event.clientX, event.clientY);
+        if (isDrawing && currentStroke) {
+          currentStroke.points.push(point);
+          redrawDrawingLayer();
+        } else if (eraserActive) {
+          eraseStrokeAt(point.x, point.y);
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDrawing = false;
+        eraserActive = false;
+        currentStroke = null;
+        if (isPanning) {
+          isPanning = false;
+          mapCanvas.style.cursor = spacePressed ? "grab" : "";
+        }
+        if (activeToken) {
+          const trashRect = mapTrash.getBoundingClientRect();
+          const tokenRect = activeToken.getBoundingClientRect();
+          const overlaps =
+            tokenRect.left < trashRect.right &&
+            tokenRect.right > trashRect.left &&
+            tokenRect.top < trashRect.bottom &&
+            tokenRect.bottom > trashRect.top;
+
+          if (overlaps) {
+            if (activeToken.classList.contains("vision-origin")) renderVisionCones();
+            activeToken.remove();
+            renderVisionCones();
+          } else {
+            activeToken.style.cursor = activeToken.classList.contains("map-note")
+              ? "text"
+              : "grab";
+          }
+
+          mapTrash.classList.remove("active");
+          activeToken = null;
+        }
+        activeRotationCone = null;
+        requestAnimationFrame(() => {
+          suppressMapClick = false;
+        });
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (isPanning) {
+          panX = panOriginX + (event.clientX - panStartX);
+          panY = panOriginY + (event.clientY - panStartY);
+          applyMapTransform();
+          return;
+        }
+
+        if (activeRotationCone) {
+          const cursor = screenToMap(event.clientX, event.clientY);
+          const originX = parseFloat(activeRotationCone.style.left);
+          const originY = parseFloat(activeRotationCone.style.top);
+          activeRotationCone.dataset.angle = `${Math.atan2(cursor.y - originY, cursor.x - originX)}`;
+          renderVisionCones();
+          return;
+        }
+
+        if (!activeToken) return;
+
+        const cursor = screenToMap(event.clientX, event.clientY);
+        const mapSize = getMapSize();
+        const tokenSize = getElementSizeInMap(activeToken);
+        const anchor = activeToken.dataset.anchor || "topleft";
+
+        if (anchor === "center") {
+          const halfW = tokenSize.width / 2;
+          const halfH = tokenSize.height / 2;
+          const centerX = clamp(cursor.x - dragOffsetX, halfW, mapSize.width - halfW);
+          const centerY = clamp(cursor.y - dragOffsetY, halfH, mapSize.height - halfH);
+          activeToken.style.left = `${centerX}px`;
+          activeToken.style.top = `${centerY}px`;
+        } else {
+          const x = clamp(cursor.x - dragOffsetX, 0, mapSize.width - tokenSize.width);
+          const y = clamp(cursor.y - dragOffsetY, 0, mapSize.height - tokenSize.height);
+          activeToken.style.left = `${x}px`;
+          activeToken.style.top = `${y}px`;
+        }
+
+        if (typeof activeToken._moveHandler === "function") activeToken._moveHandler();
+
+        const trashRect = mapTrash.getBoundingClientRect();
+        const isOverTrash =
+          event.clientX >= trashRect.left &&
+          event.clientX <= trashRect.right &&
+          event.clientY >= trashRect.top &&
+          event.clientY <= trashRect.bottom;
+        mapTrash.classList.toggle("active", isOverTrash);
+      });
+
       document.addEventListener("keydown", (event) => {
         if (event.code === "Space") {
           spacePressed = true;
-          mapCanvas.style.cursor = "grab";
+          if (!["pen", "eraser"].includes(currentTool)) mapCanvas.style.cursor = "grab";
         }
       });
 
       document.addEventListener("keyup", (event) => {
         if (event.code === "Space") {
           spacePressed = false;
-          mapCanvas.style.cursor = "";
+          if (!["pen", "eraser"].includes(currentTool)) mapCanvas.style.cursor = "";
         }
       });
 
@@ -726,37 +1162,18 @@
         mapCanvas.style.cursor = "grabbing";
       });
 
-      document.addEventListener("mouseup", () => {
-        if (isPanning) {
-          isPanning = false;
-          mapCanvas.style.cursor = spacePressed ? "grab" : "";
-        }
-      });
-
-      document.addEventListener("mousemove", (event) => {
-        if (!isPanning) return;
-        const dx = event.clientX - panStartX;
-        const dy = event.clientY - panStartY;
-        panX = panOriginX + dx;
-        panY = panOriginY + dy;
-        applyMapTransform();
-      });
-
       mapCanvas.addEventListener(
         "wheel",
         (event) => {
           event.preventDefault();
-          const zoomDelta = event.deltaY > 0 ? -0.1 : 0.1;
-          const newZoom = clamp(zoom + zoomDelta, 0.5, 3.0);
-          if (newZoom === zoom) return;
-
+          const nextZoom = clamp(zoom + (event.deltaY > 0 ? -0.1 : 0.1), 0.5, 3.0);
+          if (nextZoom === zoom) return;
           const canvasRect = mapCanvas.getBoundingClientRect();
           const mouseX = event.clientX - canvasRect.left;
           const mouseY = event.clientY - canvasRect.top;
           const mapX = (mouseX - panX) / zoom;
           const mapY = (mouseY - panY) / zoom;
-
-          zoom = newZoom;
+          zoom = nextZoom;
           panX = mouseX - mapX * zoom;
           panY = mouseY - mapY * zoom;
           applyMapTransform();
@@ -764,60 +1181,27 @@
         { passive: false }
       );
 
-      // Track dragging, update token position, and highlight trash target.
-      document.addEventListener("mousemove", (event) => {
-        if (!activeToken || isPanning) return;
-        const cursor = screenToMap(event.clientX, event.clientY);
-        const mapSize = getMapSize();
-        const tokenSize = getElementSizeInMap(activeToken);
-        const anchor = activeToken.dataset.anchor || "topleft";
-
-        if (anchor === "center") {
-          const halfW = tokenSize.width / 2;
-          const halfH = tokenSize.height / 2;
-          const centerX = cursor.x - dragOffsetX;
-          const centerY = cursor.y - dragOffsetY;
-          const clampedCenterX = clamp(centerX, halfW, mapSize.width - halfW);
-          const clampedCenterY = clamp(centerY, halfH, mapSize.height - halfH);
-          activeToken.style.left = `${clampedCenterX}px`;
-          activeToken.style.top = `${clampedCenterY}px`;
-        } else {
-          const x = cursor.x - dragOffsetX;
-          const y = cursor.y - dragOffsetY;
-          const clampedX = clamp(x, 0, mapSize.width - tokenSize.width);
-          const clampedY = clamp(y, 0, mapSize.height - tokenSize.height);
-          activeToken.style.left = `${clampedX}px`;
-          activeToken.style.top = `${clampedY}px`;
+      mapCanvas.addEventListener("click", (event) => {
+        if (suppressMapClick) return;
+        if (
+          event.target.closest(".map-agent-token, .map-utility, .vision-origin, .map-note") ||
+          event.target === mapTrash
+        ) {
+          return;
         }
-
-        const trashRect = mapTrash.getBoundingClientRect();
-        const isOverTrash =
-          event.clientX >= trashRect.left &&
-          event.clientX <= trashRect.right &&
-          event.clientY >= trashRect.top &&
-          event.clientY <= trashRect.bottom;
-        mapTrash.classList.toggle("active", isOverTrash);
       });
 
-      // Drop tokens; remove if released over the trash button.
-      document.addEventListener("mouseup", () => {
-        if (!activeToken) return;
-        const trashRect = mapTrash.getBoundingClientRect();
-        const tokenRect = activeToken.getBoundingClientRect();
-        const overlaps =
-          tokenRect.left < trashRect.right &&
-          tokenRect.right > trashRect.left &&
-          tokenRect.top < trashRect.bottom &&
-          tokenRect.bottom > trashRect.top;
+      setSide(currentSide);
+      setCurrentTool(currentTool);
+      setVisionConeSize(currentVisionCone);
+      renderMapOptions();
+      applyMapTransform();
+      setLayerSizes();
+      window.addEventListener("resize", setLayerSizes);
+      mapImage.addEventListener("load", initializeVisionMap);
 
-        if (overlaps) {
-          activeToken.remove();
-        } else {
-          activeToken.style.cursor = "grab";
-        }
-        mapTrash.classList.remove("active");
-        activeToken = null;
-      });
+      // Expose the payload builder for later backend hookup.
+      window.buildSimulationPayload = buildSimulationPayload;
     </script>
   </body>
 </html>

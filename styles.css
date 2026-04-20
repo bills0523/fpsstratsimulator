@@ -56,9 +56,10 @@ body[data-side="defense"] {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   padding: 16px;
   overflow-y: auto;
+  justify-content: flex-start;
 }
 
 /* Center column that hosts the map canvas and top bar actions. */
@@ -119,6 +120,11 @@ body[data-side="defense"] {
   gap: 10px;
 }
 
+/* Map selector shell. */
+.map-select {
+  position: relative;
+}
+
 /* Map preview area inside the selector. */
 .map-preview {
   background: #151f18;
@@ -127,10 +133,64 @@ body[data-side="defense"] {
   height: 130px;
   display: flex;
   align-items: flex-end;
-  justify-content: flex-start;
+  justify-content: space-between;
   padding: 10px;
   font-weight: 700;
   color: var(--text);
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.map-preview-caret {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg) translateY(-4px);
+  transition: transform 0.18s ease;
+}
+
+.map-select.open .map-preview-caret {
+  transform: rotate(-135deg) translateY(1px);
+}
+
+.map-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  display: none;
+  gap: 6px;
+  padding: 8px;
+  background: #121913;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
+  z-index: 5;
+}
+
+.map-select.open .map-dropdown {
+  display: grid;
+}
+
+.map-option {
+  border: 1px solid #2b342c;
+  background: #18211b;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.map-option:hover,
+.map-option.active {
+  border-color: var(--team-color);
+  color: var(--team-color);
 }
 
 /* Attack/defend toggle buttons. */
@@ -214,20 +274,85 @@ body[data-side="defense"] {
   border-radius: 6px;
 }
 
-/* Toolbox grid for utilities/markers. */
-.tools-grid {
+/* Tactical toolbar for map interaction tools. */
+.toolbar-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
-/* Individual tool tile. */
-.tool {
-  height: 36px;
-  border-radius: 8px;
+/* Individual toolbar button. */
+.tool-btn {
+  min-height: 68px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  background: #151f18;
+  background: linear-gradient(180deg, #1c261f 0%, #141b16 100%);
+  color: #d7dfd8;
   cursor: pointer;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tool-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tool-btn span {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tool-btn.active,
+.tool-btn:hover {
+  color: var(--team-color);
+  border-color: var(--team-color);
+  box-shadow: inset 0 0 0 1px rgba(var(--team-rgb), 0.18);
+  transform: translateY(-1px);
+}
+
+.tool-group {
+  position: relative;
+}
+
+.tool-submenu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  background: #121913;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.tool-suboption {
+  border-radius: 8px;
+  border: 1px solid #2b342c;
+  background: #18211b;
+  color: var(--muted);
+  padding: 6px 8px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tool-suboption.active,
+.tool-suboption:hover {
+  color: var(--team-color);
+  border-color: var(--team-color);
 }
 
 /* Header row for map actions. */
@@ -269,6 +394,23 @@ body[data-side="defense"] {
   position: absolute;
   inset: 0;
   transform-origin: 0 0;
+}
+
+.drawing-layer,
+.vision-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.drawing-layer {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.vision-layer {
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
 }
 
 /* Trash target used to remove dropped tokens. */
@@ -531,7 +673,6 @@ body[data-side="defense"] {
 
 /* Shared hover accent for clickable controls. */
 button:hover,
-.tool:hover,
 .seq:hover,
 .icon-btn:hover {
   border-color: var(--accent);
@@ -652,11 +793,120 @@ button:hover,
   --team-rgb: 0, 255, 136;
 }
 
+.map-note,
+.map-spike,
+.map-ping,
+.vision-origin {
+  position: absolute;
+  z-index: 3;
+}
+
 /* Shared base for map-placed utilities. */
 .map-utility {
   position: absolute;
   cursor: grab;
   user-select: none;
+}
+
+.map-note {
+  min-width: 80px;
+  color: #f4f7f5;
+  font-size: 16px;
+  line-height: 1.2;
+  background: transparent;
+  border: 1px dashed transparent;
+  padding: 2px 4px;
+  outline: none;
+  white-space: nowrap;
+  cursor: grab;
+}
+
+.map-note:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.18);
+  cursor: text;
+}
+
+.map-spike,
+.map-ping,
+.vision-origin {
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+.map-spike {
+  width: 26px;
+  height: 32px;
+  background: linear-gradient(180deg, #ff7682 0%, #63141e 100%);
+  clip-path: polygon(50% 0%, 18% 36%, 18% 80%, 50% 100%, 82% 80%, 82% 36%);
+  border: 2px solid #170607;
+  box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.35);
+}
+
+.map-spike::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 8px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 2px;
+}
+
+.map-ping {
+  width: 12px;
+  height: 12px;
+  border-radius: 50% 50% 50% 0;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border: 2px solid #f3f7f5;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.map-ping::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f3f7f5;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.vision-origin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #111813;
+  border: 2px solid #dcecff;
+  box-shadow: 0 0 0 4px rgba(120, 175, 255, 0.12);
+}
+
+.vision-origin::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: rgba(220, 236, 255, 0.45);
+  left: 50%;
+  top: -22px;
+  transform: translateX(-50%);
+}
+
+.vision-rotate-handle {
+  position: absolute;
+  left: 50%;
+  top: -28px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #dcecff;
+  border: 2px solid #3b6b9d;
+  transform: translate(-50%, -50%);
+  cursor: alias;
 }
 
 /* Sphere utility. */
