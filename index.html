@@ -3,1237 +3,150 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FPS Strat Simulator</title>
-    <!-- Preconnect to font hosts for faster font loading. -->
+    <title>FPS Strat Simulator Overview</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- UI typography for the simulator UI. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <!-- App-specific layout and component styles. -->
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="showcase/project-showcase.css" />
   </head>
   <body>
-    <!-- Root grid container for left/center/right panels and bottom bar. -->
-    <div id="app-container">
-      <!-- Left sidebar: map selection, sequence controls, and tools. -->
-      <aside class="left-sidebar">
-        <section class="sidebar-section">
-          <div class="section-title">Map Selection</div>
-          <div class="map-card">
-            <div class="map-select" id="map-select">
-              <button class="map-preview" id="map-preview" type="button">
-                <span id="map-preview-label">BIND</span>
-                <span class="map-preview-caret" aria-hidden="true"></span>
-              </button>
-              <div class="map-dropdown" id="map-dropdown"></div>
-            </div>
-            <div class="map-toggle">
-              <button class="toggle active">Attack</button>
-              <button class="toggle">Defend</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="sidebar-section">
-          <div class="section-title">Tools</div>
-          <div class="toolbar-grid" id="toolbar-grid">
-            <button class="tool-btn" data-tool="pen" title="Pen">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M5 16.5 15.8 5.7l2.5 2.5L7.5 19H5v-2.5Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-              <span>Pen</span>
-            </button>
-            <button class="tool-btn" data-tool="eraser" title="Eraser">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="m8 6 8 8-4 4H6l-2-2 8-10Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-              <span>Eraser</span>
-            </button>
-            <button class="tool-btn" data-tool="text" title="Text">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6 6h12M12 6v12M8 18h8"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-              <span>Text</span>
-            </button>
-            <button class="tool-btn" data-tool="spike" title="Plant Spike">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 3 7 9v8l5 4 5-4V9l-5-6Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-              <span>Spike</span>
-            </button>
-            <button
-              class="tool-btn tool-btn-cursor active"
-              data-tool="cursor"
-              title="Cursor"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6 4v15l3.8-4 2.7 5 2.2-1.1-2.7-4.9H17L6 4Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-              <span>Cursor</span>
-            </button>
-            <div class="tool-group">
-              <button class="tool-btn" data-tool="vision" title="Vision Cone">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M6 18c0-7.5 3-12 6-12s6 4.5 6 12"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-width="1.8"
-                  />
-                  <circle cx="12" cy="18" r="2" fill="currentColor" />
-                </svg>
-                <span>Vision</span>
-              </button>
-              <div class="tool-submenu" id="vision-submenu">
-                <button class="tool-suboption active" data-cone="small">Small</button>
-                <button class="tool-suboption" data-cone="medium">Medium</button>
-                <button class="tool-suboption" data-cone="large">Large</button>
-              </div>
-            </div>
-            <button class="tool-btn" data-tool="ping" title="Ping">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 21c4-4.5 6-7.6 6-10.5a6 6 0 1 0-12 0C6 13.4 8 16.5 12 21Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                />
-                <circle cx="12" cy="10.5" r="2" fill="currentColor" />
-              </svg>
-              <span>Ping</span>
-            </button>
-          </div>
-        </section>
-      </aside>
-
-      <!-- Center workspace: top bar actions and map canvas. -->
-      <main class="center-map">
-        <div class="map-topbar">
-          <div class="topbar-left">
-            <button class="icon-btn">⚙</button>
-            <button class="icon-btn">💾</button>
-            <button class="icon-btn">📸</button>
-            <button class="icon-btn">🎥</button>
-            <button class="icon-btn">➕</button>
-          </div>
-          <button class="icon-btn danger">🗑</button>
-        </div>
-        <!-- Map canvas viewport used for token placement and dragging. -->
-        <div class="map-canvas" id="map-canvas">
-          <!-- Trash target: drop tokens here to delete them. -->
-          <button class="map-trash" id="map-trash" title="Delete token">🗑</button>
-          <div class="map-wrapper" id="map-wrapper">
-            <img
-              class="map-image"
-              id="map-image"
-              src="assets/maps/Map Bind.png"
-              alt="Bind map"
-            />
-            <svg
-              class="vision-layer"
-              id="vision-layer"
-              viewBox="0 0 1000 1000"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            ></svg>
-            <canvas class="drawing-layer" id="drawing-layer"></canvas>
+    <main class="showcase-page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Tactical Strategy Sandbox</p>
+          <h1>Plan, place, test, and visualize a full round before it happens.</h1>
+          <p class="hero-text">
+            FPS Strat Simulator is a 2D planning workspace for tactical shooter rounds.
+            It combines map control, placement tools, vision modeling, and combat
+            simulation in one surface.
+          </p>
+          <div class="hero-points">
+            <span>Simulation Engine</span>
+            <span>Interactive Maps</span>
+            <span>Agent Loadouts</span>
+            <span>Drawing + Planning Tools</span>
+            <span>Dynamic Vision Cones</span>
           </div>
         </div>
-      </main>
+        <aside class="hero-panel">
+          <div class="panel-chip">Project Scope</div>
+          <ul class="panel-list">
+            <li>Map navigation with pan and zoom</li>
+            <li>Agent placement with weapon assignment</li>
+            <li>Utility placement and tactical markup tools</li>
+            <li>Image-derived vision collision engine</li>
+            <li>Probabilistic combat resolution backend</li>
+          </ul>
+        </aside>
+      </section>
 
-      <!-- Right sidebar: high-level actions or navigation. -->
-      <aside class="right-sidebar">
-        <div class="right-header">Home</div>
-        <button class="primary wide">Add Strategy</button>
-      </aside>
+      <section class="intro-grid">
+        <article class="info-card">
+          <h2>The Simulation</h2>
+          <p>
+            The backend resolves combat with a tick-based model. Weapon type,
+            position, side, and utility state all shape combat power.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Map Design</h2>
+          <p>
+            Multiple maps can be swapped from the dropdown. Each switch resets placed
+            objects, drawings, and vision state.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Agent Placement</h2>
+          <p>
+            Agents drop onto the board with weapons, sides, and utilities to model
+            setups, site hits, and spacing.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Tooling</h2>
+          <p>
+            Pen, eraser, text, spike, ping, and vision tools turn the map into a live
+            planning canvas.
+          </p>
+        </article>
+      </section>
 
-      <!-- Bottom bar: filters plus draggable agent roster. -->
-      <section class="bottom-bar">
-        <div class="bottom-left">
-          <div class="filter-row">
-            <button class="filter active">All</button>
-            <button class="filter">On Map</button>
-            <button class="filter">Ally</button>
-          </div>
-          <div class="filter-row">
-            <button class="filter">Favored</button>
-            <div class="mini-icons">
-              <div class="mini-icon"></div>
-              <div class="mini-icon"></div>
-              <div class="mini-icon"></div>
-            </div>
-          </div>
+      <section class="demo-section">
+        <div class="section-heading">
+          <p class="eyebrow">Demo Surfaces</p>
+          <h2>Replace these placeholders with your own screenshots.</h2>
+          <p>
+            The page has three visual slots. Replace the files in `showcase/demo/`
+            while keeping the same names.
+          </p>
         </div>
-        <div class="bottom-right" id="agent-roster">
-          <img src="assets/agents/astra.png" alt="Astra" class="agent-icon" />
-          <img src="assets/agents/breach.png" alt="Breach" class="agent-icon" />
-          <img src="assets/agents/brimstone.png" alt="Brimstone" class="agent-icon" />
-          <img src="assets/agents/chamber.png" alt="Chamber" class="agent-icon" />
-          <img src="assets/agents/clove.png" alt="Clove" class="agent-icon" />
-          <img src="assets/agents/cypher.png" alt="Cypher" class="agent-icon" />
-          <img src="assets/agents/deadlock.png" alt="Deadlock" class="agent-icon" />
-          <img src="assets/agents/fade.png" alt="Fade" class="agent-icon" />
-          <img src="assets/agents/gekko.png" alt="Gekko" class="agent-icon" />
-          <img src="assets/agents/harbor.png" alt="Harbor" class="agent-icon" />
-          <img src="assets/agents/iso.png" alt="Iso" class="agent-icon" />
-          <img src="assets/agents/jett.png" alt="Jett" class="agent-icon" />
-          <img src="assets/agents/kj.png" alt="Killjoy" class="agent-icon" />
-          <img src="assets/agents/ko.png" alt="KAY/O" class="agent-icon" />
-          <img src="assets/agents/mito.png" alt="Mito" class="agent-icon" />
-          <img src="assets/agents/neon.png" alt="Neon" class="agent-icon" />
-          <img src="assets/agents/omen.png" alt="Omen" class="agent-icon" />
-          <img src="assets/agents/pheonix.png" alt="Phoenix" class="agent-icon" />
-          <img src="assets/agents/raze.png" alt="Raze" class="agent-icon" />
-          <img src="assets/agents/reyna.png" alt="Reyna" class="agent-icon" />
-          <img src="assets/agents/sage.png" alt="Sage" class="agent-icon" />
-          <img src="assets/agents/skye.png" alt="Skye" class="agent-icon" />
-          <img src="assets/agents/sove.png" alt="Sova" class="agent-icon" />
-          <img src="assets/agents/tejo.png" alt="Tejo" class="agent-icon" />
-          <img src="assets/agents/veto.png" alt="Veto" class="agent-icon" />
-          <img src="assets/agents/viper.png" alt="Viper" class="agent-icon" />
-          <img src="assets/agents/vyse.png" alt="Vyse" class="agent-icon" />
-          <img src="assets/agents/waylay.png" alt="Waylay" class="agent-icon" />
-          <img src="assets/agents/yoru.png" alt="Yoru" class="agent-icon" />
+
+        <div class="demo-stack">
+          <article class="demo-card demo-card-wide">
+            <div class="demo-copy">
+              <p class="demo-tag">Map Showcase</p>
+              <h3>Demonstrate the map workspace and overview layout.</h3>
+              <p>
+                Use this area for a full map screenshot with the board and planning
+                layout.
+              </p>
+              <code>showcase/demo/mao-demo.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/mao-demo.png"
+                alt="Placeholder for map demonstration image"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Vision Cone</p>
+              <h3>Show the raycast-based cone system against the map.</h3>
+              <p>
+                Use a screenshot that shows cone direction, occlusion, and polygon
+                response.
+              </p>
+              <code>showcase/demo/vision-cone-demo.jpg</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/vision-cone-demo.jpg"
+                alt="Placeholder for vision cone demonstration image"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Agents + Weapons + Utilities</p>
+              <h3>Present loadouts, tokens, and utility placement in one frame.</h3>
+              <p>
+                Use this slot for agents on the board with weapons, utilities, and
+                planning tools.
+              </p>
+              <code>showcase/demo/loadout-demo.svg</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/loadout-demo.svg"
+                alt="Placeholder for agent, weapon, and utility demonstration image"
+              />
+            </figure>
+          </article>
         </div>
       </section>
-    </div>
-    <!-- Hover popover for agent utilities (positioned via JS). -->
-    <div class="utility-popover" id="utility-popover" aria-hidden="true"></div>
-    <!-- Context menu for selecting weapons on agent tokens. -->
-    <div class="weapon-popover" id="weapon-popover" aria-hidden="true">
-      <button class="weapon-option" data-weapon="1" title="Pistol">
-        <span class="weapon-icon weapon-pistol"></span>
-      </button>
-      <button class="weapon-option" data-weapon="2" title="SMG/Shotgun">
-        <span class="weapon-icon weapon-smg"></span>
-      </button>
-      <button class="weapon-option" data-weapon="3" title="Rifle">
-        <span class="weapon-icon weapon-rifle"></span>
-      </button>
-      <button class="weapon-option" data-weapon="4" title="Sniper">
-        <span class="weapon-icon weapon-sniper"></span>
-      </button>
-    </div>
-    <script type="module">
-      import { VisionEngine } from "./visionEngine.js";
 
-      const mapCanvas = document.getElementById("map-canvas");
-      const mapWrapper = document.getElementById("map-wrapper");
-      const mapTrash = document.getElementById("map-trash");
-      const mapImage = document.getElementById("map-image");
-      const mapSelect = document.getElementById("map-select");
-      const mapPreview = document.getElementById("map-preview");
-      const mapPreviewLabel = document.getElementById("map-preview-label");
-      const mapDropdown = document.getElementById("map-dropdown");
-      const drawingLayer = document.getElementById("drawing-layer");
-      const drawingCtx = drawingLayer.getContext("2d");
-      const visionLayer = document.getElementById("vision-layer");
-      const agentIcons = document.querySelectorAll(".agent-icon");
-      const utilityPopover = document.getElementById("utility-popover");
-      const agentRoster = document.getElementById("agent-roster");
-      const sideToggles = document.querySelectorAll(".map-toggle .toggle");
-      const weaponPopover = document.getElementById("weapon-popover");
-      const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
-      const toolButtons = document.querySelectorAll(".tool-btn");
-      const visionSuboptions = document.querySelectorAll(".tool-suboption");
-      const visionEngine = new VisionEngine();
-
-      let activeToken = null;
-      let dragOffsetX = 0;
-      let dragOffsetY = 0;
-      let activeRotationCone = null;
-      let popoverHideTimer = null;
-      let activeAgentId = null;
-      let activeWeaponToken = null;
-      let currentSide = "attack";
-      let currentTool = "cursor";
-      let currentVisionCone = "small";
-      let currentMap = "Bind";
-
-      let panX = 0;
-      let panY = 0;
-      let zoom = 1;
-      let isPanning = false;
-      let panStartX = 0;
-      let panStartY = 0;
-      let panOriginX = 0;
-      let panOriginY = 0;
-      let spacePressed = false;
-      let suppressMapClick = false;
-
-      let isDrawing = false;
-      let currentStroke = null;
-      let eraserActive = false;
-      const drawnStrokes = [];
-
-      const conePresets = {
-        small: { spread: 31.5, range: 72 },
-        medium: { spread: 52.5, range: 112 },
-        large: { spread: 77, range: 144 },
-      };
-
-      const availableMaps = [
-        { name: "Bind", src: "assets/maps/Map Bind.png" },
-        { name: "Breeze", src: "assets/maps/breeze.png" },
-        { name: "Fracture", src: "assets/maps/fracture.png" },
-        { name: "Haven", src: "assets/maps/haven.png" },
-        { name: "Lotus", src: "assets/maps/lotus.png" },
-        { name: "Pearl", src: "assets/maps/pearl.png" },
-      ];
-
-      const agentUtilities = {
-        astra: [
-          { name: "Nebula", type: "util-sphere" },
-          { name: "Nova Pulse", type: "util-stun" },
-          { name: "Gravity Well", type: "util-stun" },
-          { name: "Cosmic Divide", type: "util-line" },
-        ],
-        breach: [
-          { name: "Flashpoint", type: "util-flash" },
-          { name: "Fault Line", type: "util-stun" },
-          { name: "Aftershock", type: "util-stun" },
-          { name: "Rolling Thunder", type: "util-stun" },
-        ],
-        brimstone: [
-          { name: "Incendiary", type: "util-molly" },
-          { name: "Sky Smoke", type: "util-sphere" },
-          { name: "Orbital Strike", type: "util-stun" },
-          { name: "Stim Beacon", type: "util-sphere" },
-        ],
-        chamber: [
-          { name: "Trademark", type: "util-trap" },
-          { name: "Trademark", type: "util-trap" },
-          { name: "Rendezvous", type: "util-recon" },
-          { name: "Tour de Force", type: "util-stun" },
-        ],
-        clove: [
-          { name: "Ruse", type: "util-sphere" },
-          { name: "Meddle", type: "util-molly" },
-          { name: "Pick-Me-Up", type: "util-stun" },
-          { name: "Not Dead Yet", type: "util-recon" },
-        ],
-        cypher: [
-          { name: "Trapwire", type: "util-trap" },
-          { name: "Trapwire", type: "util-trap" },
-          { name: "Cyber Cage", type: "util-sphere" },
-          { name: "Spycam", type: "util-recon" },
-        ],
-        deadlock: [
-          { name: "GravNet", type: "util-trap" },
-          { name: "Sonic Sensor", type: "util-trap" },
-          { name: "Barrier Mesh", type: "util-line" },
-          { name: "Annihilation", type: "util-stun" },
-        ],
-        fade: [
-          { name: "Haunt", type: "util-recon" },
-          { name: "Prowler", type: "util-recon" },
-          { name: "Seize", type: "util-stun" },
-          { name: "Nightfall", type: "util-recon" },
-        ],
-        gekko: [
-          { name: "Dizzy", type: "util-flash" },
-          { name: "Wingman", type: "util-stun" },
-          { name: "Mosh Pit", type: "util-molly" },
-          { name: "Thrash", type: "util-recon" },
-        ],
-        harbor: [
-          { name: "Cove", type: "util-sphere" },
-          { name: "High Tide", type: "util-line" },
-          { name: "Cascade", type: "util-line" },
-          { name: "Reckoning", type: "util-stun" },
-        ],
-        iso: [
-          { name: "Double Tap", type: "util-stun" },
-          { name: "Undercut", type: "util-stun" },
-          { name: "Contingency", type: "util-line" },
-          { name: "Kill Contract", type: "util-stun" },
-        ],
-        jett: [
-          { name: "Cloudburst", type: "util-sphere" },
-          { name: "Updraft", type: "util-stun" },
-          { name: "Tailwind", type: "util-stun" },
-          { name: "Blade Storm", type: "util-stun" },
-        ],
-        kj: [
-          { name: "Nanoswarm", type: "util-molly" },
-          { name: "Nanoswarm", type: "util-molly" },
-          { name: "Alarmbot", type: "util-trap" },
-          { name: "Lockdown", type: "util-stun" },
-        ],
-        ko: [
-          { name: "FLASH/drive", type: "util-flash" },
-          { name: "FRAG/ment", type: "util-molly" },
-          { name: "ZERO/point", type: "util-recon" },
-          { name: "NULL/cmd", type: "util-stun" },
-        ],
-        mito: [
-          { name: "Mist Screen", type: "util-sphere" },
-          { name: "Surge Line", type: "util-line" },
-          { name: "Static Flash", type: "util-flash" },
-          { name: "Shockwave", type: "util-stun" },
-        ],
-        neon: [
-          { name: "Relay Bolt", type: "util-stun" },
-          { name: "Fast Lane", type: "util-line" },
-          { name: "High Gear", type: "util-stun" },
-          { name: "Overdrive", type: "util-stun" },
-        ],
-        omen: [
-          { name: "Dark Cover", type: "util-sphere" },
-          { name: "Paranoia", type: "util-flash" },
-          { name: "Shrouded Step", type: "util-line" },
-          { name: "From the Shadows", type: "util-recon" },
-        ],
-        pheonix: [
-          { name: "Blaze", type: "util-line" },
-          { name: "Curveball", type: "util-flash" },
-          { name: "Hot Hands", type: "util-molly" },
-          { name: "Run it Back", type: "util-stun" },
-        ],
-        phoenix: [
-          { name: "Blaze", type: "util-line" },
-          { name: "Curveball", type: "util-flash" },
-          { name: "Hot Hands", type: "util-molly" },
-          { name: "Run it Back", type: "util-stun" },
-        ],
-        raze: [
-          { name: "Boom Bot", type: "util-recon" },
-          { name: "Paint Shells", type: "util-molly" },
-          { name: "Blast Pack", type: "util-stun" },
-          { name: "Showstopper", type: "util-stun" },
-        ],
-        reyna: [
-          { name: "Leer", type: "util-flash" },
-          { name: "Devour", type: "util-stun" },
-          { name: "Dismiss", type: "util-stun" },
-          { name: "Empress", type: "util-stun" },
-        ],
-        sage: [
-          { name: "Barrier Orb", type: "util-line" },
-          { name: "Slow Orb", type: "util-stun" },
-          { name: "Healing Orb", type: "util-sphere" },
-          { name: "Resurrection", type: "util-stun" },
-        ],
-        skye: [
-          { name: "Guiding Light", type: "util-flash" },
-          { name: "Trailblazer", type: "util-recon" },
-          { name: "Regrowth", type: "util-sphere" },
-          { name: "Seekers", type: "util-recon" },
-        ],
-        sove: [
-          { name: "Recon Bolt", type: "util-recon" },
-          { name: "Shock Bolt", type: "util-molly" },
-          { name: "Owl Drone", type: "util-recon" },
-          { name: "Hunter's Fury", type: "util-line" },
-        ],
-        tejo: [
-          { name: "Pulse Net", type: "util-trap" },
-          { name: "Quake Line", type: "util-line" },
-          { name: "Shatter Flash", type: "util-flash" },
-          { name: "Ground Spike", type: "util-stun" },
-        ],
-        veto: [
-          { name: "Lock Snare", type: "util-trap" },
-          { name: "Signal Bloom", type: "util-recon" },
-          { name: "Burst Charge", type: "util-molly" },
-          { name: "Dead Zone", type: "util-stun" },
-        ],
-        viper: [
-          { name: "Snake Bite", type: "util-molly" },
-          { name: "Poison Cloud", type: "util-sphere" },
-          { name: "Toxic Screen", type: "util-line" },
-          { name: "Viper's Pit", type: "util-sphere" },
-        ],
-        vyse: [
-          { name: "Arc Flash", type: "util-flash" },
-          { name: "Steel Snare", type: "util-trap" },
-          { name: "Obscura", type: "util-sphere" },
-          { name: "Overload", type: "util-stun" },
-        ],
-        waylay: [
-          { name: "Mirror Smoke", type: "util-sphere" },
-          { name: "Slipstream", type: "util-line" },
-          { name: "Lumen Flash", type: "util-flash" },
-          { name: "Lockdown Field", type: "util-stun" },
-        ],
-        yoru: [
-          { name: "Blindside", type: "util-flash" },
-          { name: "Gatecrash", type: "util-line" },
-          { name: "Fakeout", type: "util-recon" },
-          { name: "Dimensional Drift", type: "util-stun" },
-        ],
-      };
-
-      function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
-      }
-
-      function applyMapTransform() {
-        mapWrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
-      }
-
-      function screenToMap(clientX, clientY) {
-        const canvasRect = mapCanvas.getBoundingClientRect();
-        return {
-          x: (clientX - canvasRect.left - panX) / zoom,
-          y: (clientY - canvasRect.top - panY) / zoom,
-        };
-      }
-
-      function getMapSize() {
-        return {
-          width: mapCanvas.clientWidth,
-          height: mapCanvas.clientHeight,
-        };
-      }
-
-      function getElementSizeInMap(el) {
-        const rect = el.getBoundingClientRect();
-        return { width: rect.width / zoom, height: rect.height / zoom };
-      }
-
-      function initializeVisionMap() {
-        const { width, height } = getMapSize();
-        if (!width || !height || !mapImage.complete) return;
-        visionEngine.initializeMap(mapImage, width, height);
-        renderVisionCones();
-      }
-
-      function setLayerSizes() {
-        const { width, height } = getMapSize();
-        drawingLayer.width = width;
-        drawingLayer.height = height;
-        visionLayer.setAttribute("viewBox", `0 0 ${width} ${height}`);
-        redrawDrawingLayer();
-        initializeVisionMap();
-      }
-
-      function clearCurrentMapState() {
-        activeToken = null;
-        activeRotationCone = null;
-        isDrawing = false;
-        eraserActive = false;
-        currentStroke = null;
-        panX = 0;
-        panY = 0;
-        zoom = 1;
-        mapTrash.classList.remove("active");
-        utilityPopover.classList.remove("active");
-        utilityPopover.setAttribute("aria-hidden", "true");
-        hideWeaponPopover();
-        drawnStrokes.length = 0;
-        redrawDrawingLayer();
-        visionLayer.innerHTML = "";
-        mapWrapper
-          .querySelectorAll(
-            ".map-agent-token, .map-utility, .map-note, .map-spike, .map-ping, .vision-origin"
-          )
-          .forEach((element) => element.remove());
-        applyMapTransform();
-      }
-
-      function renderMapOptions() {
-        mapDropdown.innerHTML = "";
-        availableMaps.forEach((mapOption) => {
-          const button = document.createElement("button");
-          button.className = "map-option";
-          button.type = "button";
-          button.textContent = mapOption.name;
-          button.classList.toggle("active", mapOption.name === currentMap);
-          button.addEventListener("click", () => {
-            setCurrentMap(mapOption.name);
-          });
-          mapDropdown.appendChild(button);
-        });
-      }
-
-      function setCurrentMap(name) {
-        const nextMap = availableMaps.find((mapOption) => mapOption.name === name);
-        if (!nextMap) return;
-        clearCurrentMapState();
-        currentMap = nextMap.name;
-        mapPreviewLabel.textContent = nextMap.name.toUpperCase();
-        mapImage.src = nextMap.src;
-        mapImage.alt = `${nextMap.name} map`;
-        mapSelect.classList.remove("open");
-        renderMapOptions();
-        setLayerSizes();
-      }
-
-      function getAgentIdFromIcon(icon) {
-        const src = icon.getAttribute("src") || "";
-        return (src.split("/").pop() || "").toLowerCase().replace(".png", "");
-      }
-
-      function getTeamStrokeColor(side) {
-        return side === "attack" ? "#ff4655" : "#f5f7f6";
-      }
-
-      function setCurrentTool(tool) {
-        currentTool = tool;
-        toolButtons.forEach((button) => {
-          button.classList.toggle("active", button.dataset.tool === tool);
-        });
-        drawingLayer.style.pointerEvents =
-          tool === "pen" || tool === "eraser" ? "auto" : "none";
-        mapCanvas.style.cursor =
-          tool === "pen" || tool === "eraser"
-            ? "crosshair"
-            : spacePressed
-              ? "grab"
-              : "";
-      }
-
-      function setVisionConeSize(size) {
-        currentVisionCone = size;
-        visionSuboptions.forEach((option) => {
-          option.classList.toggle("active", option.dataset.cone === size);
-        });
-      }
-
-      function renderUtilityPopover(agentId) {
-        const utilities = agentUtilities[agentId] || [];
-        utilityPopover.innerHTML = "";
-        utilities.forEach((util) => {
-          const button = document.createElement("button");
-          button.className = "utility-item";
-          button.dataset.utilityType = util.type;
-          button.title = util.name;
-          button.textContent = util.name
-            .split(" ")
-            .map((word) => word[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase();
-          button.addEventListener("mousedown", (event) => {
-            event.preventDefault();
-            createUtilityOnMap(util.type);
-          });
-          utilityPopover.appendChild(button);
-        });
-      }
-
-      function showUtilityPopover(icon) {
-        const agentId = icon.dataset.agentId;
-        if (!agentId) return;
-        activeAgentId = agentId;
-        renderUtilityPopover(agentId);
-        utilityPopover.classList.add("active");
-        utilityPopover.setAttribute("aria-hidden", "false");
-        const iconRect = icon.getBoundingClientRect();
-        const popoverRect = utilityPopover.getBoundingClientRect();
-        const left = clamp(
-          iconRect.left + iconRect.width / 2 - popoverRect.width / 2,
-          8,
-          window.innerWidth - popoverRect.width - 8
-        );
-        const top = clamp(
-          iconRect.top - popoverRect.height,
-          8,
-          window.innerHeight - popoverRect.height - 8
-        );
-        utilityPopover.style.left = `${left}px`;
-        utilityPopover.style.top = `${top}px`;
-      }
-
-      function schedulePopoverHide() {
-        if (popoverHideTimer) clearTimeout(popoverHideTimer);
-        popoverHideTimer = setTimeout(() => {
-          utilityPopover.classList.remove("active");
-          utilityPopover.setAttribute("aria-hidden", "true");
-          activeAgentId = null;
-        }, 120);
-      }
-
-      function cancelPopoverHide() {
-        if (!popoverHideTimer) return;
-        clearTimeout(popoverHideTimer);
-        popoverHideTimer = null;
-      }
-
-      function isMovingToPopover(event) {
-        return utilityPopover.contains(event.relatedTarget);
-      }
-
-      function isMovingToAgent(event) {
-        return event.relatedTarget && event.relatedTarget.classList?.contains("agent-icon");
-      }
-
-      function showWeaponPopover(token, clientX, clientY) {
-        activeWeaponToken = token;
-        weaponPopover.classList.add("active");
-        weaponPopover.setAttribute("aria-hidden", "false");
-        const popRect = weaponPopover.getBoundingClientRect();
-        weaponPopover.style.left = `${clamp(clientX + 8, 8, window.innerWidth - popRect.width - 8)}px`;
-        weaponPopover.style.top = `${clamp(clientY - popRect.height / 2, 8, window.innerHeight - popRect.height - 8)}px`;
-      }
-
-      function hideWeaponPopover() {
-        weaponPopover.classList.remove("active");
-        weaponPopover.setAttribute("aria-hidden", "true");
-        activeWeaponToken = null;
-      }
-
-      function attachDragBehavior(element, anchor = "center", onMove = null) {
-        element.dataset.anchor = anchor;
-        element.addEventListener("mousedown", (event) => {
-          if (spacePressed || event.button === 1) return;
-          if (event.target.closest(".vision-rotate-handle")) return;
-          suppressMapClick = true;
-          activeToken = element;
-          const cursor = screenToMap(event.clientX, event.clientY);
-          dragOffsetX = cursor.x - parseFloat(element.style.left || "0");
-          dragOffsetY = cursor.y - parseFloat(element.style.top || "0");
-          element.style.cursor = "grabbing";
-          element.dataset.moveHandler = onMove ? "true" : "false";
-          element._moveHandler = onMove;
-        });
-      }
-
-      function createAgentToken(icon) {
-        const token = document.createElement("div");
-        token.className = "map-agent-token";
-        token.dataset.side = currentSide;
-        token.dataset.weapon = "3";
-        token.style.backgroundImage = `url("${icon.src}")`;
-        token.setAttribute("aria-label", icon.alt || "Agent");
-        const badge = document.createElement("span");
-        badge.className = "weapon-badge";
-        badge.dataset.weapon = "3";
-        badge.title = "Change weapon";
-        const badgeIcon = document.createElement("span");
-        badgeIcon.className = "weapon-icon";
-        badge.appendChild(badgeIcon);
-        token.appendChild(badge);
-        const { width, height } = getMapSize();
-        token.style.left = `${width / 2 - 20}px`;
-        token.style.top = `${height / 2 - 20}px`;
-        token.addEventListener("contextmenu", (event) => {
-          event.preventDefault();
-          showWeaponPopover(token, event.clientX, event.clientY);
-        });
-        token.addEventListener("dblclick", (event) => {
-          showWeaponPopover(token, event.clientX, event.clientY);
-        });
-        badge.addEventListener("mousedown", (event) => {
-          event.stopPropagation();
-        });
-        badge.addEventListener("click", (event) => {
-          event.stopPropagation();
-          showWeaponPopover(token, event.clientX, event.clientY);
-        });
-        attachDragBehavior(token, "topleft");
-        mapWrapper.appendChild(token);
-      }
-
-      function createUtilityOnMap(utilityType) {
-        const util = document.createElement("div");
-        util.className = `map-utility ${utilityType}`;
-        util.dataset.utilityType = utilityType;
-        util.dataset.side = currentSide;
-        const { width, height } = getMapSize();
-        util.style.left = `${width / 2}px`;
-        util.style.top = `${height / 2}px`;
-        attachDragBehavior(util, "center");
-        mapWrapper.appendChild(util);
-      }
-
-      function createTextNote(x, y) {
-        const note = document.createElement("div");
-        note.className = "map-note";
-        note.contentEditable = "true";
-        note.dataset.side = currentSide;
-        note.textContent = "New callout";
-        note.style.left = `${x}px`;
-        note.style.top = `${y}px`;
-        attachDragBehavior(note, "topleft");
-        note.addEventListener("dblclick", () => {
-          note.focus();
-        });
-        note.addEventListener("blur", () => {
-          if (!note.textContent.trim()) note.remove();
-        });
-        mapWrapper.appendChild(note);
-        requestAnimationFrame(() => note.focus());
-      }
-
-      function createSpikeMarker(x, y) {
-        const spike = document.createElement("div");
-        spike.className = "map-spike";
-        spike.dataset.side = currentSide;
-        spike.style.left = `${x}px`;
-        spike.style.top = `${y}px`;
-        attachDragBehavior(spike, "center");
-        mapWrapper.appendChild(spike);
-      }
-
-      function createPingMarker(x, y) {
-        const ping = document.createElement("div");
-        ping.className = "map-ping";
-        ping.dataset.side = currentSide;
-        ping.style.left = `${x}px`;
-        ping.style.top = `${y}px`;
-        attachDragBehavior(ping, "center");
-        mapWrapper.appendChild(ping);
-      }
-
-      function createVisionEmitter(x, y) {
-        const emitter = document.createElement("div");
-        emitter.className = "vision-origin";
-        emitter.dataset.side = currentSide;
-        emitter.dataset.cone = currentVisionCone;
-        emitter.dataset.angle = "0";
-        emitter.style.left = `${x}px`;
-        emitter.style.top = `${y}px`;
-        const handle = document.createElement("button");
-        handle.className = "vision-rotate-handle";
-        handle.type = "button";
-        handle.addEventListener("mousedown", (event) => {
-          event.stopPropagation();
-          event.preventDefault();
-          activeRotationCone = emitter;
-        });
-        emitter.appendChild(handle);
-        attachDragBehavior(emitter, "center", renderVisionCones);
-        mapWrapper.appendChild(emitter);
-        renderVisionCones();
-      }
-
-      function getMapCenterPoint() {
-        const { width, height } = getMapSize();
-        return { x: width / 2, y: height / 2 };
-      }
-
-      function redrawDrawingLayer() {
-        drawingCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
-        drawnStrokes.forEach((stroke) => {
-          if (stroke.points.length < 2) return;
-          drawingCtx.beginPath();
-          drawingCtx.lineWidth = stroke.width;
-          drawingCtx.lineCap = "round";
-          drawingCtx.lineJoin = "round";
-          drawingCtx.strokeStyle = stroke.color;
-          drawingCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
-          stroke.points.slice(1).forEach((point) => drawingCtx.lineTo(point.x, point.y));
-          drawingCtx.stroke();
-        });
-      }
-
-      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
-        const abx = bx - ax;
-        const aby = by - ay;
-        const abSquared = abx * abx + aby * aby;
-        if (!abSquared) return Math.hypot(px - ax, py - ay);
-        const t = clamp(((px - ax) * abx + (py - ay) * aby) / abSquared, 0, 1);
-        const closestX = ax + abx * t;
-        const closestY = ay + aby * t;
-        return Math.hypot(px - closestX, py - closestY);
-      }
-
-      function eraseStrokeAt(x, y) {
-        const hitIndex = drawnStrokes.findIndex((stroke) =>
-          stroke.points.some((point, index) => {
-            if (index === 0) return false;
-            const prev = stroke.points[index - 1];
-            return pointToSegmentDistance(x, y, prev.x, prev.y, point.x, point.y) <= 8;
-          })
-        );
-        if (hitIndex >= 0) {
-          drawnStrokes.splice(hitIndex, 1);
-          redrawDrawingLayer();
-        }
-      }
-
-      function renderVisionCones() {
-        visionLayer.innerHTML = "";
-        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-        visionLayer.appendChild(defs);
-        const emitters = mapWrapper.querySelectorAll(".vision-origin");
-
-        emitters.forEach((emitter, index) => {
-          const origin = {
-            x: parseFloat(emitter.style.left),
-            y: parseFloat(emitter.style.top),
-          };
-          const angle = parseFloat(emitter.dataset.angle || "0");
-          const coneType = emitter.dataset.cone || "medium";
-          const preset = conePresets[coneType];
-          const rayPoints = visionEngine.calculateCone(
-            origin.x,
-            origin.y,
-            angle,
-            coneType
-          );
-          const points = [origin, ...rayPoints];
-          const gradient = document.createElementNS("http://www.w3.org/2000/svg", "radialGradient");
-          gradient.id = `vision-gradient-${index}`;
-          gradient.setAttribute("gradientUnits", "userSpaceOnUse");
-          gradient.setAttribute("cx", `${origin.x}`);
-          gradient.setAttribute("cy", `${origin.y}`);
-          gradient.setAttribute("r", `${preset.range}`);
-          [
-            { offset: "0%", color: "#ffffff", opacity: "0.22" },
-            { offset: "55%", color: "#96beff", opacity: "0.18" },
-            { offset: "100%", color: "#96beff", opacity: "0" },
-          ].forEach((stopConfig) => {
-            const stop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-            stop.setAttribute("offset", stopConfig.offset);
-            stop.setAttribute("stop-color", stopConfig.color);
-            stop.setAttribute("stop-opacity", stopConfig.opacity);
-            gradient.appendChild(stop);
-          });
-          defs.appendChild(gradient);
-
-          const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-          const validPoints = points.filter(
-            (point) => Number.isFinite(point.x) && Number.isFinite(point.y)
-          );
-          if (validPoints.length < 3) return;
-          polygon.setAttribute(
-            "points",
-            validPoints.map((point) => `${point.x},${point.y}`).join(" ")
-          );
-          polygon.setAttribute("fill", `url(#${gradient.id})`);
-          polygon.setAttribute("stroke", "rgba(220,236,255,0.38)");
-          polygon.setAttribute("stroke-width", "1");
-          polygon.setAttribute("fill-rule", "nonzero");
-          visionLayer.appendChild(polygon);
-        });
-      }
-
-      function buildSimulationPayload() {
-        const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map(
-          (token) => ({
-            id: token.getAttribute("aria-label") || "agent",
-            x: parseFloat(token.style.left),
-            y: parseFloat(token.style.top),
-            side: token.dataset.side || "attack",
-            weapon_category: parseInt(token.dataset.weapon || "3", 10),
-          })
-        );
-
-        const utilities = Array.from(
-          mapWrapper.querySelectorAll(".map-utility, .map-spike, .map-ping, .vision-origin")
-        ).map((util, index) => ({
-          id: `util_${index}`,
-          type: util.dataset.utilityType || util.className.split(" ")[0] || "utility",
-          x: parseFloat(util.style.left),
-          y: parseFloat(util.style.top),
-          radius: 0,
-          side: util.dataset.side || "attack",
-        }));
-
-        return {
-          map: currentMap,
-          created_at: new Date().toISOString(),
-          players,
-          utilities,
-        };
-      }
-
-      function setSide(side) {
-        currentSide = side;
-        document.body.dataset.side = side;
-        sideToggles.forEach((btn) => {
-          btn.classList.toggle("active", btn.dataset.side === side);
-        });
-      }
-
-      sideToggles.forEach((btn) => {
-        const label = btn.textContent.trim().toLowerCase();
-        btn.dataset.side = label === "attack" ? "attack" : "defense";
-        btn.addEventListener("click", () => setSide(btn.dataset.side));
-      });
-
-      toolButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const tool = button.dataset.tool;
-          setCurrentTool(tool);
-          const center = getMapCenterPoint();
-          if (tool === "ping") createPingMarker(center.x, center.y);
-          if (tool === "text") createTextNote(center.x, center.y);
-          if (tool === "spike") createSpikeMarker(center.x, center.y);
-          if (tool === "vision") createVisionEmitter(center.x, center.y);
-        });
-      });
-
-      visionSuboptions.forEach((option) => {
-        option.addEventListener("click", (event) => {
-          event.stopPropagation();
-          setVisionConeSize(option.dataset.cone);
-          setCurrentTool("vision");
-        });
-      });
-
-      weaponOptions.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (!activeWeaponToken) return;
-          const weapon = btn.dataset.weapon;
-          activeWeaponToken.dataset.weapon = weapon;
-          const badge = activeWeaponToken.querySelector(".weapon-badge");
-          if (badge) badge.dataset.weapon = weapon;
-          hideWeaponPopover();
-        });
-      });
-
-      agentIcons.forEach((icon) => {
-        icon.dataset.agentId = getAgentIdFromIcon(icon);
-        icon.addEventListener("click", () => createAgentToken(icon));
-        icon.addEventListener("mouseenter", () => {
-          cancelPopoverHide();
-          showUtilityPopover(icon);
-        });
-        icon.addEventListener("mouseleave", (event) => {
-          if (!isMovingToPopover(event)) schedulePopoverHide();
-        });
-      });
-
-      utilityPopover.addEventListener("mouseenter", cancelPopoverHide);
-      utilityPopover.addEventListener("mouseleave", (event) => {
-        if (!isMovingToAgent(event)) schedulePopoverHide();
-      });
-
-      document.addEventListener("click", (event) => {
-        if (!mapSelect.contains(event.target)) {
-          mapSelect.classList.remove("open");
-        }
-        if (
-          weaponPopover.classList.contains("active") &&
-          !weaponPopover.contains(event.target) &&
-          !(activeWeaponToken && activeWeaponToken.contains(event.target))
-        ) {
-          hideWeaponPopover();
-        }
-      });
-
-      mapPreview.addEventListener("click", () => {
-        mapSelect.classList.toggle("open");
-      });
-
-      drawingLayer.addEventListener("mousedown", (event) => {
-        if (currentTool !== "pen" && currentTool !== "eraser") return;
-        const point = screenToMap(event.clientX, event.clientY);
-
-        if (currentTool === "pen") {
-          isDrawing = true;
-          currentStroke = {
-            points: [point],
-            width: 3,
-            color: getTeamStrokeColor(currentSide),
-          };
-          drawnStrokes.push(currentStroke);
-          redrawDrawingLayer();
-        } else {
-          eraserActive = true;
-          eraseStrokeAt(point.x, point.y);
-        }
-      });
-
-      drawingLayer.addEventListener("mousemove", (event) => {
-        const point = screenToMap(event.clientX, event.clientY);
-        if (isDrawing && currentStroke) {
-          currentStroke.points.push(point);
-          redrawDrawingLayer();
-        } else if (eraserActive) {
-          eraseStrokeAt(point.x, point.y);
-        }
-      });
-
-      document.addEventListener("mouseup", () => {
-        isDrawing = false;
-        eraserActive = false;
-        currentStroke = null;
-        if (isPanning) {
-          isPanning = false;
-          mapCanvas.style.cursor = spacePressed ? "grab" : "";
-        }
-        if (activeToken) {
-          const trashRect = mapTrash.getBoundingClientRect();
-          const tokenRect = activeToken.getBoundingClientRect();
-          const overlaps =
-            tokenRect.left < trashRect.right &&
-            tokenRect.right > trashRect.left &&
-            tokenRect.top < trashRect.bottom &&
-            tokenRect.bottom > trashRect.top;
-
-          if (overlaps) {
-            if (activeToken.classList.contains("vision-origin")) renderVisionCones();
-            activeToken.remove();
-            renderVisionCones();
-          } else {
-            activeToken.style.cursor = activeToken.classList.contains("map-note")
-              ? "text"
-              : "grab";
-          }
-
-          mapTrash.classList.remove("active");
-          activeToken = null;
-        }
-        activeRotationCone = null;
-        requestAnimationFrame(() => {
-          suppressMapClick = false;
-        });
-      });
-
-      document.addEventListener("mousemove", (event) => {
-        if (isPanning) {
-          panX = panOriginX + (event.clientX - panStartX);
-          panY = panOriginY + (event.clientY - panStartY);
-          applyMapTransform();
-          return;
-        }
-
-        if (activeRotationCone) {
-          const cursor = screenToMap(event.clientX, event.clientY);
-          const originX = parseFloat(activeRotationCone.style.left);
-          const originY = parseFloat(activeRotationCone.style.top);
-          activeRotationCone.dataset.angle = `${Math.atan2(cursor.y - originY, cursor.x - originX)}`;
-          renderVisionCones();
-          return;
-        }
-
-        if (!activeToken) return;
-
-        const cursor = screenToMap(event.clientX, event.clientY);
-        const mapSize = getMapSize();
-        const tokenSize = getElementSizeInMap(activeToken);
-        const anchor = activeToken.dataset.anchor || "topleft";
-
-        if (anchor === "center") {
-          const halfW = tokenSize.width / 2;
-          const halfH = tokenSize.height / 2;
-          const centerX = clamp(cursor.x - dragOffsetX, halfW, mapSize.width - halfW);
-          const centerY = clamp(cursor.y - dragOffsetY, halfH, mapSize.height - halfH);
-          activeToken.style.left = `${centerX}px`;
-          activeToken.style.top = `${centerY}px`;
-        } else {
-          const x = clamp(cursor.x - dragOffsetX, 0, mapSize.width - tokenSize.width);
-          const y = clamp(cursor.y - dragOffsetY, 0, mapSize.height - tokenSize.height);
-          activeToken.style.left = `${x}px`;
-          activeToken.style.top = `${y}px`;
-        }
-
-        if (typeof activeToken._moveHandler === "function") activeToken._moveHandler();
-
-        const trashRect = mapTrash.getBoundingClientRect();
-        const isOverTrash =
-          event.clientX >= trashRect.left &&
-          event.clientX <= trashRect.right &&
-          event.clientY >= trashRect.top &&
-          event.clientY <= trashRect.bottom;
-        mapTrash.classList.toggle("active", isOverTrash);
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if (event.code === "Space") {
-          spacePressed = true;
-          if (!["pen", "eraser"].includes(currentTool)) mapCanvas.style.cursor = "grab";
-        }
-      });
-
-      document.addEventListener("keyup", (event) => {
-        if (event.code === "Space") {
-          spacePressed = false;
-          if (!["pen", "eraser"].includes(currentTool)) mapCanvas.style.cursor = "";
-        }
-      });
-
-      mapCanvas.addEventListener("mousedown", (event) => {
-        const isMiddle = event.button === 1;
-        const isSpaceDrag = event.button === 0 && spacePressed;
-        const isCursorDrag =
-          currentTool === "cursor" &&
-          event.button === 0 &&
-          !event.target.closest(
-            ".map-agent-token, .map-utility, .vision-origin, .map-note, .map-spike, .map-ping"
-          ) &&
-          event.target !== mapTrash &&
-          !event.target.closest(".vision-rotate-handle");
-        if (!isMiddle && !isSpaceDrag && !isCursorDrag) return;
-        event.preventDefault();
-        isPanning = true;
-        panStartX = event.clientX;
-        panStartY = event.clientY;
-        panOriginX = panX;
-        panOriginY = panY;
-        mapCanvas.style.cursor = "grabbing";
-      });
-
-      mapCanvas.addEventListener(
-        "wheel",
-        (event) => {
-          event.preventDefault();
-          const nextZoom = clamp(zoom + (event.deltaY > 0 ? -0.1 : 0.1), 0.5, 3.0);
-          if (nextZoom === zoom) return;
-          const canvasRect = mapCanvas.getBoundingClientRect();
-          const mouseX = event.clientX - canvasRect.left;
-          const mouseY = event.clientY - canvasRect.top;
-          const mapX = (mouseX - panX) / zoom;
-          const mapY = (mouseY - panY) / zoom;
-          zoom = nextZoom;
-          panX = mouseX - mapX * zoom;
-          panY = mouseY - mapY * zoom;
-          applyMapTransform();
-        },
-        { passive: false }
-      );
-
-      mapCanvas.addEventListener("click", (event) => {
-        if (suppressMapClick) return;
-        if (
-          event.target.closest(".map-agent-token, .map-utility, .vision-origin, .map-note") ||
-          event.target === mapTrash
-        ) {
-          return;
-        }
-      });
-
-      setSide(currentSide);
-      setCurrentTool(currentTool);
-      setVisionConeSize(currentVisionCone);
-      renderMapOptions();
-      applyMapTransform();
-      setLayerSizes();
-      window.addEventListener("resize", setLayerSizes);
-      mapImage.addEventListener("load", initializeVisionMap);
-
-      // Expose the payload builder for later backend hookup.
-      window.buildSimulationPayload = buildSimulationPayload;
-    </script>
+      <section class="footer-banner">
+        <p class="eyebrow">Project Summary</p>
+        <h2>
+          A tactical planning surface for maps, agents, utilities, and live vision.
+        </h2>
+      </section>
+    </main>
   </body>
 </html>

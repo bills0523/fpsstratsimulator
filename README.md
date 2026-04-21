@@ -10,10 +10,12 @@ A web-based 2D Valorant strategy simulator prototype. Current progress includes:
 
 ## Project Structure
 
-- `index.html`: Frontend UI and canvas playback logic.
+- `index.html`: One-page project showcase and introduction.
+- `demo.html`: Frontend simulator UI and canvas playback logic.
 - `backend/app.py`: FastAPI simulation service.
 - `backend/requirements.txt`: Backend dependencies.
 - `schemas/`: JSON schemas for core data structures.
+- `showcase/`: Showcase styling and demo image slots.
 
 ## Run Backend
 
@@ -24,7 +26,7 @@ uvicorn backend.app:app --reload
 
 ## Use Frontend
 
-Open `index.html` in a browser, place players/utilities, click `Start Simulation`, then `Play`.
+Open `index.html` to view the project introduction. Open `demo.html` to use the simulator.
 
 ## Next Steps
 
