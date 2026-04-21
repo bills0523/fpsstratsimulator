@@ -324,6 +324,10 @@ body[data-side="defense"] {
   position: relative;
 }
 
+.tool-btn-cursor {
+  grid-column: 1;
+}
+
 .tool-submenu {
   position: absolute;
   left: 0;
@@ -714,6 +718,8 @@ button:hover,
   display: grid;
   place-items: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  z-index: 1;
 }
 
 .weapon-badge .weapon-icon {

@@ -40,7 +40,7 @@
         <section class="sidebar-section">
           <div class="section-title">Tools</div>
           <div class="toolbar-grid" id="toolbar-grid">
-            <button class="tool-btn active" data-tool="pen" title="Pen">
+            <button class="tool-btn" data-tool="pen" title="Pen">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M5 16.5 15.8 5.7l2.5 2.5L7.5 19H5v-2.5Z"
@@ -87,6 +87,22 @@
                 />
               </svg>
               <span>Spike</span>
+            </button>
+            <button
+              class="tool-btn tool-btn-cursor active"
+              data-tool="cursor"
+              title="Cursor"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 4v15l3.8-4 2.7 5 2.2-1.1-2.7-4.9H17L6 4Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+              <span>Cursor</span>
             </button>
             <div class="tool-group">
               <button class="tool-btn" data-tool="vision" title="Vision Cone">
@@ -265,7 +281,7 @@
       let activeAgentId = null;
       let activeWeaponToken = null;
       let currentSide = "attack";
-      let currentTool = "pen";
+      let currentTool = "cursor";
       let currentVisionCone = "small";
       let currentMap = "Bind";
 
@@ -719,6 +735,7 @@
         const badge = document.createElement("span");
         badge.className = "weapon-badge";
         badge.dataset.weapon = "3";
+        badge.title = "Change weapon";
         const badgeIcon = document.createElement("span");
         badgeIcon.className = "weapon-icon";
         badge.appendChild(badgeIcon);
@@ -731,6 +748,13 @@
           showWeaponPopover(token, event.clientX, event.clientY);
         });
         token.addEventListener("dblclick", (event) => {
+          showWeaponPopover(token, event.clientX, event.clientY);
+        });
+        badge.addEventListener("mousedown", (event) => {
+          event.stopPropagation();
+        });
+        badge.addEventListener("click", (event) => {
+          event.stopPropagation();
           showWeaponPopover(token, event.clientX, event.clientY);
         });
         attachDragBehavior(token, "topleft");
@@ -1152,7 +1176,15 @@
       mapCanvas.addEventListener("mousedown", (event) => {
         const isMiddle = event.button === 1;
         const isSpaceDrag = event.button === 0 && spacePressed;
-        if (!isMiddle && !isSpaceDrag) return;
+        const isCursorDrag =
+          currentTool === "cursor" &&
+          event.button === 0 &&
+          !event.target.closest(
+            ".map-agent-token, .map-utility, .vision-origin, .map-note, .map-spike, .map-ping"
+          ) &&
+          event.target !== mapTrash &&
+          !event.target.closest(".vision-rotate-handle");
+        if (!isMiddle && !isSpaceDrag && !isCursorDrag) return;
         event.preventDefault();
         isPanning = true;
         panStartX = event.clientX;
