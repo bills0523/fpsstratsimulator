@@ -4,12 +4,34 @@ import json
 import random
 from dataclasses import dataclass
 from math import hypot
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional, Tuple
 
 # Simulation resolution and baseline combat power scalar.
 TICKS_PER_SECOND = 10
 BASE_POWER = 10.0
 PIXELS_PER_METER = 10.0
+DEFAULT_UTILITY_RADII = {
+    "util-flash": 22.0,
+    "util-molly": 32.0,
+    "util-sphere": 34.0,
+    "util-line": 46.0,
+    "util-recon": 52.0,
+    "util-trap": 28.0,
+    "util-stun": 38.0,
+}
+UTILITY_TYPE_ALIASES = {
+    "blind": "util-flash",
+    "flash": "util-flash",
+    "molly": "util-molly",
+    "smoke": "util-sphere",
+    "sphere": "util-sphere",
+    "wall": "util-line",
+    "line": "util-line",
+    "reveal": "util-recon",
+    "recon": "util-recon",
+    "trap": "util-trap",
+    "stun": "util-stun",
+}
 
 AngleState = Literal["holding_45", "peeking_90", "neutral"]
 UtilityType = Literal[
@@ -46,6 +68,18 @@ class Utility:
     y: float
     radius: float
     side: Literal["attack", "defense"]
+
+
+def normalize_utility_type(raw_type: str) -> Optional[UtilityType]:
+    """Map incoming labels onto the utility types used by the combat model."""
+    if raw_type in DEFAULT_UTILITY_RADII:
+        return raw_type  # type: ignore[return-value]
+    return UTILITY_TYPE_ALIASES.get(raw_type)
+
+
+def get_default_utility_radius(utility_type: UtilityType) -> float:
+    """Return a fallback radius for utility payloads that omit one."""
+    return DEFAULT_UTILITY_RADII[utility_type]
 
 
 def check_utility_intersection(player: Player, utilities: List[Utility]) -> List[UtilityType]:
@@ -222,6 +256,186 @@ def simulate_duel(
         "result": "timeout",
         "tick": total_ticks,
         "timeline": timeline,
+    }
+
+
+def pair_nearest_enemies(players: List[Player]) -> List[Tuple[Player, Player]]:
+    """Greedily pair the closest living attackers and defenders."""
+    attackers = [player for player in players if player.side == "attack"]
+    defenders = [player for player in players if player.side == "defense"]
+
+    distances: List[Tuple[float, Player, Player]] = []
+    for attacker in attackers:
+        for defender in defenders:
+            distances.append((get_distance_m(attacker, defender), attacker, defender))
+
+    distances.sort(key=lambda item: item[0])
+    used_attackers = set()
+    used_defenders = set()
+    pairs: List[Tuple[Player, Player]] = []
+
+    for _, attacker, defender in distances:
+        if attacker.name in used_attackers or defender.name in used_defenders:
+            continue
+        used_attackers.add(attacker.name)
+        used_defenders.add(defender.name)
+        pairs.append((attacker, defender))
+
+    return pairs
+
+
+def simulate_teamfight(
+    players: List[Player],
+    active_utilities: List[Utility],
+    max_seconds: int = 30,
+    seed: Optional[int] = None,
+) -> Dict[str, object]:
+    """
+    Simulate a teamfight by evaluating nearest cross-side engagements each tick.
+    """
+    rng = random.Random(seed)
+    total_ticks = max_seconds * TICKS_PER_SECOND
+    roster = [
+        Player(
+            name=player.name,
+            x=player.x,
+            y=player.y,
+            elo_factor=player.elo_factor,
+            weapon_category=player.weapon_category,
+            distance_to_target=player.distance_to_target,
+            angle_state=player.angle_state,
+            side=player.side,
+        )
+        for player in players
+    ]
+    alive: Dict[str, bool] = {player.name: True for player in roster}
+    events: List[Dict[str, object]] = []
+
+    for tick in range(1, total_ticks + 1):
+        living_players = [player for player in roster if alive[player.name]]
+        attacks_alive = [player for player in living_players if player.side == "attack"]
+        defenses_alive = [player for player in living_players if player.side == "defense"]
+
+        if not attacks_alive or not defenses_alive:
+            winner_side = "attack" if attacks_alive else "defense"
+            return {
+                "result": f"{winner_side} wins",
+                "winner_side": winner_side,
+                "tick": tick - 1,
+                "events": events,
+                "survivors": [player.name for player in living_players],
+                "side_counts": {
+                    "attack": len(attacks_alive),
+                    "defense": len(defenses_alive),
+                },
+            }
+
+        engagements = pair_nearest_enemies(living_players)
+        casualties = set()
+
+        for attacker, defender in engagements:
+            attack_power = calculate_combat_power(attacker, defender, active_utilities)
+            defense_power = calculate_combat_power(defender, attacker, active_utilities)
+            combined_power = attack_power + defense_power
+
+            if combined_power <= 0:
+                continue
+
+            engagement_scale = min(0.32, 0.06 + (combined_power / (BASE_POWER * 60.0)))
+            attacker_kill_chance = min(
+                0.9,
+                engagement_scale
+                * (attack_power / combined_power)
+                * (1.0 + attacker.elo_factor * 0.05),
+            )
+            defender_kill_chance = min(
+                0.9,
+                engagement_scale
+                * (defense_power / combined_power)
+                * (1.0 + defender.elo_factor * 0.05),
+            )
+
+            attacker_kill = rng.random() < attacker_kill_chance
+            defender_kill = rng.random() < defender_kill_chance
+
+            if attacker_kill and defender_kill:
+                casualties.add(attacker.name)
+                casualties.add(defender.name)
+                events.append(
+                    {
+                        "tick": tick,
+                        "type": "trade",
+                        "actor": attacker.name,
+                        "target": defender.name,
+                        "power": {
+                            "attack": round(attack_power, 2),
+                            "defense": round(defense_power, 2),
+                        },
+                        "event": (
+                            f"Tick {tick}: {attacker.name} and {defender.name} trade "
+                            f"({attack_power:.2f} vs {defense_power:.2f} power)."
+                        ),
+                    }
+                )
+            elif attacker_kill:
+                casualties.add(defender.name)
+                events.append(
+                    {
+                        "tick": tick,
+                        "type": "kill",
+                        "actor": attacker.name,
+                        "target": defender.name,
+                        "power": {
+                            "attack": round(attack_power, 2),
+                            "defense": round(defense_power, 2),
+                        },
+                        "event": (
+                            f"Tick {tick}: {attacker.name} eliminates {defender.name} "
+                            f"({attack_power:.2f} vs {defense_power:.2f} power)."
+                        ),
+                    }
+                )
+            elif defender_kill:
+                casualties.add(attacker.name)
+                events.append(
+                    {
+                        "tick": tick,
+                        "type": "kill",
+                        "actor": defender.name,
+                        "target": attacker.name,
+                        "power": {
+                            "attack": round(attack_power, 2),
+                            "defense": round(defense_power, 2),
+                        },
+                        "event": (
+                            f"Tick {tick}: {defender.name} eliminates {attacker.name} "
+                            f"({defense_power:.2f} vs {attack_power:.2f} power)."
+                        ),
+                    }
+                )
+
+        for name in casualties:
+            alive[name] = False
+
+    living_players = [player for player in roster if alive[player.name]]
+    attacks_alive = [player for player in living_players if player.side == "attack"]
+    defenses_alive = [player for player in living_players if player.side == "defense"]
+    winner_side = None
+    if len(attacks_alive) > len(defenses_alive):
+        winner_side = "attack"
+    elif len(defenses_alive) > len(attacks_alive):
+        winner_side = "defense"
+
+    return {
+        "result": "timeout",
+        "winner_side": winner_side,
+        "tick": total_ticks,
+        "events": events,
+        "survivors": [player.name for player in living_players],
+        "side_counts": {
+            "attack": len(attacks_alive),
+            "defense": len(defenses_alive),
+        },
     }
 
 

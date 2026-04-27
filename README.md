@@ -5,8 +5,8 @@ A web-based 2D Valorant strategy simulator prototype. Current progress includes:
 
 - JSON Schemas for weapons, agents, and the Ascent map.
 - Canvas-based frontend for placing players/utilities and playing back simulations.
-- FastAPI backend with a tick-based simulation engine (10 ticks/sec, max 300 ticks).
-- Elo-driven gunfight logic with utility impact and basic line-of-sight distance checks.
+- FastAPI backend with a live teamfight simulation endpoint.
+- Elo-driven combat resolution that considers side, weapon class, angle state, and utility overlap.
 
 ## Project Structure
 
@@ -28,8 +28,17 @@ uvicorn backend.app:app --reload
 
 Open `index.html` to view the project introduction. Open `demo.html` to use the simulator.
 
+To run live combat simulation from the demo:
+
+1. Start the backend with `uvicorn backend.app:app --reload`
+2. Open `demo.html`
+3. Place at least one attacker and one defender
+4. Set the backend URL in the right sidebar and click `Run Simulation`
+
+The frontend is static, so a deployed website still needs a separately hosted FastAPI backend URL for the live simulation button to work.
+
 ## Next Steps
 
 - Load real map and weapon data from JSON files.
-- Add team logic, positioning constraints, and richer utility interactions.
+- Add richer replay and round-state logic on top of the live simulation response.
 - Replace placeholder map with scaled Ascent layout.

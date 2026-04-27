@@ -139,6 +139,10 @@ h3 {
   margin-top: 26px;
 }
 
+.hero-actions {
+  margin-top: 22px;
+}
+
 .hero-points span,
 .panel-chip,
 code {
@@ -154,6 +158,25 @@ code {
   color: #d8e7da;
   font-size: 0.85rem;
   word-spacing: 0.1em;
+}
+
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(102, 231, 255, 0.28);
+  background: rgba(102, 231, 255, 0.08);
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.hero-link:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
 }
 
 .panel-list {

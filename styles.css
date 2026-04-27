@@ -84,6 +84,7 @@ body[data-side="defense"] {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
 }
 
 /* Bottom bar spanning left + center columns. */
@@ -456,6 +457,145 @@ body[data-side="defense"] {
   font-weight: 600;
 }
 
+.sidebar-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sim-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #151d17;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-subhead {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-split {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field-input {
+  width: 100%;
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #111813;
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.sim-board-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-board-meta span {
+  border: 1px solid #2d382f;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sim-status {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+  background: #111813;
+}
+
+.sim-status[data-tone="success"] {
+  color: #98f0c1;
+  border-color: rgba(0, 255, 136, 0.28);
+}
+
+.sim-status[data-tone="error"] {
+  color: #ffb1aa;
+  border-color: rgba(255, 99, 82, 0.35);
+}
+
+.sim-status[data-tone="loading"] {
+  color: #cfe4ff;
+  border-color: rgba(150, 190, 255, 0.35);
+}
+
+.sim-summary {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #111813;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.summary-result {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.summary-meta + .summary-meta {
+  margin-top: 4px;
+}
+
+.sim-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.sim-event {
+  border: 1px solid #2b342c;
+  border-radius: 8px;
+  background: #111813;
+  padding: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.sim-event-tick {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--team-color);
+  margin-bottom: 4px;
+}
+
+.sim-event.empty {
+  color: var(--muted);
+}
+
 /* Primary CTA buttons. */
 .primary {
   background: #1a241e;
@@ -464,6 +604,11 @@ body[data-side="defense"] {
   border-radius: 8px;
   padding: 10px 12px;
   cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 /* Left side of bottom bar with filters. */

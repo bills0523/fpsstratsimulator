@@ -176,10 +176,69 @@
         </div>
       </main>
 
-      <!-- Right sidebar: high-level actions or navigation. -->
+      <!-- Right sidebar: live simulation controls and results. -->
       <aside class="right-sidebar">
-        <div class="right-header">Home</div>
-        <button class="primary wide">Add Strategy</button>
+        <div class="right-header">Live Simulation</div>
+        <p class="sidebar-copy">
+          Build the round on the map, then resolve the current attacker and
+          defender setup against the backend simulation service.
+        </p>
+
+        <section class="sim-panel">
+          <div class="field-stack">
+            <label class="field-label" for="backend-url">Backend URL</label>
+            <input
+              class="field-input"
+              id="backend-url"
+              type="url"
+              value="http://127.0.0.1:8000"
+              spellcheck="false"
+            />
+          </div>
+
+          <div class="field-split">
+            <div class="field-stack">
+              <label class="field-label" for="elo-select">Elo</label>
+              <select class="field-input" id="elo-select">
+                <option value="low">Low</option>
+                <option value="mid" selected>Mid</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="field-stack">
+              <label class="field-label" for="max-seconds">Duration</label>
+              <input
+                class="field-input"
+                id="max-seconds"
+                type="number"
+                min="1"
+                max="60"
+                value="18"
+              />
+            </div>
+          </div>
+
+          <div class="sim-board-meta" id="sim-board-meta">
+            <span>0 attackers</span>
+            <span>0 defenders</span>
+            <span>0 utilities</span>
+          </div>
+
+          <button class="primary wide" id="run-sim-btn" type="button">
+            Run Simulation
+          </button>
+          <div class="sim-status" id="sim-status">Waiting for a board state.</div>
+        </section>
+
+        <section class="sim-panel">
+          <div class="panel-subhead">Result</div>
+          <div class="sim-summary" id="sim-summary">
+            Place attackers, defenders, and combat utilities to generate a live
+            result.
+          </div>
+          <div class="panel-subhead">Timeline</div>
+          <div class="sim-events" id="sim-events"></div>
+        </section>
       </aside>
 
       <!-- Bottom bar: filters plus draggable agent roster. -->
@@ -271,6 +330,14 @@
       const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
       const toolButtons = document.querySelectorAll(".tool-btn");
       const visionSuboptions = document.querySelectorAll(".tool-suboption");
+      const backendUrlInput = document.getElementById("backend-url");
+      const eloSelect = document.getElementById("elo-select");
+      const maxSecondsInput = document.getElementById("max-seconds");
+      const runSimButton = document.getElementById("run-sim-btn");
+      const simStatus = document.getElementById("sim-status");
+      const simSummary = document.getElementById("sim-summary");
+      const simEvents = document.getElementById("sim-events");
+      const simBoardMeta = document.getElementById("sim-board-meta");
       const visionEngine = new VisionEngine();
 
       let activeToken = null;
@@ -498,9 +565,87 @@
           { name: "Dimensional Drift", type: "util-stun" },
         ],
       };
+      const BACKEND_URL_STORAGE_KEY = "fps-strat-sim-backend-url";
+      const utilityRadii = {
+        "util-flash": 22,
+        "util-molly": 32,
+        "util-sphere": 34,
+        "util-line": 46,
+        "util-recon": 52,
+        "util-trap": 28,
+        "util-stun": 38,
+      };
 
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
+      }
+
+      function getBackendBaseUrl() {
+        return backendUrlInput.value.trim().replace(/\/+$/, "");
+      }
+
+      function setSimulationStatus(message, tone = "neutral") {
+        simStatus.textContent = message;
+        simStatus.dataset.tone = tone;
+      }
+
+      function updateBoardMeta() {
+        const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token"));
+        const utilities = Array.from(mapWrapper.querySelectorAll(".map-utility"));
+        const attackers = players.filter((token) => token.dataset.side === "attack").length;
+        const defenders = players.filter((token) => token.dataset.side === "defense").length;
+        simBoardMeta.innerHTML = `
+          <span>${attackers} attackers</span>
+          <span>${defenders} defenders</span>
+          <span>${utilities.length} utilities</span>
+        `;
+      }
+
+      function renderSimulationResult(result) {
+        const attackCount = result.side_counts?.attack ?? 0;
+        const defenseCount = result.side_counts?.defense ?? 0;
+        const winnerText = result.winner_side
+          ? `${result.winner_side.toUpperCase()} advantage`
+          : "No clear winner";
+        simSummary.innerHTML = `
+          <div class="summary-result">${result.result}</div>
+          <div class="summary-meta">${winnerText}</div>
+          <div class="summary-meta">Tick ${result.tick} on ${result.map} | ${result.elo.toUpperCase()} elo</div>
+          <div class="summary-meta">${attackCount} attackers alive, ${defenseCount} defenders alive</div>
+          <div class="summary-meta">Survivors: ${
+            result.survivors?.length ? result.survivors.join(", ") : "none"
+          }</div>
+        `;
+
+        if (!result.events?.length) {
+          simEvents.innerHTML = '<div class="sim-event empty">No combat events resolved.</div>';
+          return;
+        }
+
+        simEvents.innerHTML = result.events
+          .map(
+            (event) => `
+              <article class="sim-event">
+                <div class="sim-event-tick">Tick ${event.tick}</div>
+                <div>${event.event}</div>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function inferAngleStateForToken(token, visionOrigins) {
+        const tokenX = parseFloat(token.style.left);
+        const tokenY = parseFloat(token.style.top);
+        const side = token.dataset.side || "attack";
+        const supportedVision = visionOrigins.some((origin) => {
+          if ((origin.dataset.side || "attack") !== side) return false;
+          const dx = tokenX - parseFloat(origin.style.left);
+          const dy = tokenY - parseFloat(origin.style.top);
+          return Math.hypot(dx, dy) <= 96;
+        });
+        if (!supportedVision) return "neutral";
+        return side === "attack" ? "peeking_90" : "holding_45";
       }
 
       function applyMapTransform() {
@@ -565,6 +710,11 @@
           )
           .forEach((element) => element.remove());
         applyMapTransform();
+        updateBoardMeta();
+        simSummary.textContent =
+          "Place attackers, defenders, and combat utilities to generate a live result.";
+        simEvents.innerHTML = "";
+        setSimulationStatus("Waiting for a board state.");
       }
 
       function renderMapOptions() {
@@ -730,6 +880,7 @@
         token.className = "map-agent-token";
         token.dataset.side = currentSide;
         token.dataset.weapon = "3";
+        token.dataset.agentId = getAgentIdFromIcon(icon);
         token.style.backgroundImage = `url("${icon.src}")`;
         token.setAttribute("aria-label", icon.alt || "Agent");
         const badge = document.createElement("span");
@@ -759,6 +910,7 @@
         });
         attachDragBehavior(token, "topleft");
         mapWrapper.appendChild(token);
+        updateBoardMeta();
       }
 
       function createUtilityOnMap(utilityType) {
@@ -771,6 +923,7 @@
         util.style.top = `${height / 2}px`;
         attachDragBehavior(util, "center");
         mapWrapper.appendChild(util);
+        updateBoardMeta();
       }
 
       function createTextNote(x, y) {
@@ -937,33 +1090,95 @@
       }
 
       function buildSimulationPayload() {
-        const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map(
-          (token) => ({
-            id: token.getAttribute("aria-label") || "agent",
-            x: parseFloat(token.style.left),
-            y: parseFloat(token.style.top),
-            side: token.dataset.side || "attack",
-            weapon_category: parseInt(token.dataset.weapon || "3", 10),
-          })
-        );
-
-        const utilities = Array.from(
-          mapWrapper.querySelectorAll(".map-utility, .map-spike, .map-ping, .vision-origin")
-        ).map((util, index) => ({
-          id: `util_${index}`,
-          type: util.dataset.utilityType || util.className.split(" ")[0] || "utility",
-          x: parseFloat(util.style.left),
-          y: parseFloat(util.style.top),
-          radius: 0,
-          side: util.dataset.side || "attack",
+        const visionOrigins = Array.from(mapWrapper.querySelectorAll(".vision-origin"));
+        const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map((token) => ({
+          id: token.getAttribute("aria-label") || "agent",
+          x: parseFloat(token.style.left),
+          y: parseFloat(token.style.top),
+          side: token.dataset.side || "attack",
+          weapon_category: parseInt(token.dataset.weapon || "3", 10),
+          angle_state: inferAngleStateForToken(token, visionOrigins),
         }));
+
+        const utilities = Array.from(mapWrapper.querySelectorAll(".map-utility")).map(
+          (util, index) => {
+            const utilityType = util.dataset.utilityType || "util-sphere";
+            return {
+              id: `util_${index}`,
+              type: utilityType,
+              x: parseFloat(util.style.left),
+              y: parseFloat(util.style.top),
+              radius: utilityRadii[utilityType] || 0,
+              side: util.dataset.side || "attack",
+            };
+          }
+        );
 
         return {
           map: currentMap,
           created_at: new Date().toISOString(),
           players,
           utilities,
+          elo: eloSelect.value,
+          max_seconds: parseInt(maxSecondsInput.value || "18", 10),
         };
+      }
+
+      async function runSimulation() {
+        const payload = buildSimulationPayload();
+        const attackCount = payload.players.filter((player) => player.side === "attack").length;
+        const defenseCount = payload.players.filter((player) => player.side === "defense").length;
+        const baseUrl = getBackendBaseUrl();
+
+        if (!baseUrl) {
+          setSimulationStatus("Enter a backend URL before running the simulation.", "error");
+          return;
+        }
+
+        if (!attackCount || !defenseCount) {
+          setSimulationStatus(
+            "Place at least one attacker and one defender on the map before simulating.",
+            "error"
+          );
+          return;
+        }
+
+        runSimButton.disabled = true;
+        setSimulationStatus("Running simulation...", "loading");
+        simEvents.innerHTML = "";
+
+        try {
+          const response = await fetch(`${baseUrl}/simulate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            let message = `Simulation request failed with status ${response.status}.`;
+            try {
+              const errorPayload = await response.json();
+              if (errorPayload.detail) message = errorPayload.detail;
+            } catch (error) {
+              // Keep the HTTP status message when the body is not JSON.
+            }
+            throw new Error(message);
+          }
+
+          const result = await response.json();
+          renderSimulationResult(result);
+          setSimulationStatus("Simulation complete.", "success");
+          localStorage.setItem(BACKEND_URL_STORAGE_KEY, baseUrl);
+        } catch (error) {
+          simSummary.textContent =
+            "The demo could not reach the backend. Start the FastAPI service and confirm the URL above.";
+          simEvents.innerHTML = "";
+          setSimulationStatus(error.message || "Simulation failed.", "error");
+        } finally {
+          runSimButton.disabled = false;
+        }
       }
 
       function setSide(side) {
@@ -979,6 +1194,12 @@
         btn.dataset.side = label === "attack" ? "attack" : "defense";
         btn.addEventListener("click", () => setSide(btn.dataset.side));
       });
+
+      backendUrlInput.addEventListener("change", () => {
+        backendUrlInput.value = getBackendBaseUrl();
+        localStorage.setItem(BACKEND_URL_STORAGE_KEY, backendUrlInput.value);
+      });
+      runSimButton.addEventListener("click", runSimulation);
 
       toolButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -1095,6 +1316,7 @@
             if (activeToken.classList.contains("vision-origin")) renderVisionCones();
             activeToken.remove();
             renderVisionCones();
+            updateBoardMeta();
           } else {
             activeToken.style.cursor = activeToken.classList.contains("map-note")
               ? "text"
@@ -1227,13 +1449,18 @@
       setCurrentTool(currentTool);
       setVisionConeSize(currentVisionCone);
       renderMapOptions();
+      backendUrlInput.value =
+        localStorage.getItem(BACKEND_URL_STORAGE_KEY) || backendUrlInput.value;
       applyMapTransform();
       setLayerSizes();
+      updateBoardMeta();
+      setSimulationStatus("Waiting for a board state.");
       window.addEventListener("resize", setLayerSizes);
       mapImage.addEventListener("load", initializeVisionMap);
 
-      // Expose the payload builder for later backend hookup.
+      // Expose the payload builder for debugging and backend verification.
       window.buildSimulationPayload = buildSimulationPayload;
+      window.runSimulation = runSimulation;
     </script>
   </body>
 </html>
