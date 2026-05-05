@@ -41,7 +41,7 @@
             <li>Agent placement with weapon assignment</li>
             <li>Utility placement and tactical markup tools</li>
             <li>Image-derived vision collision engine</li>
-            <li>Probabilistic combat resolution backend</li>
+            <li>Probabilistic in-browser combat simulation</li>
           </ul>
         </aside>
       </section>
@@ -50,7 +50,7 @@
         <article class="info-card">
           <h2>The Simulation</h2>
           <p>
-            The backend resolves combat with a tick-based model. Weapon type,
+            The browser resolves combat with a tick-based model. Weapon type,
             position, side, and utility state all shape combat power.
           </p>
         </article>
@@ -170,7 +170,7 @@
               <h3>Weapon choices feed directly into combat calculations.</h3>
               <p>
                 Agents can equip Pistols, SMGs, Shotguns, or Rifles. These choices are
-                not cosmetic: the backend simulation uses weapon class, range, and
+                not cosmetic: the simulation engine uses weapon class, range, and
                 angle state to calculate combat advantages.
               </p>
               <code>showcase/demo/weapon-choosing.png</code>

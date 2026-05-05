@@ -5,37 +5,37 @@ A web-based 2D Valorant strategy simulator prototype. Current progress includes:
 
 - JSON Schemas for weapons, agents, and the Ascent map.
 - Canvas-based frontend for placing players/utilities and playing back simulations.
-- FastAPI backend with a live teamfight simulation endpoint.
+- In-browser teamfight simulation with an automatic worker fallback.
 - Elo-driven combat resolution that considers side, weapon class, angle state, and utility overlap.
 
 ## Project Structure
 
 - `index.html`: One-page project showcase and introduction.
 - `demo.html`: Frontend simulator UI and canvas playback logic.
-- `backend/app.py`: FastAPI simulation service.
-- `backend/requirements.txt`: Backend dependencies.
+- `browserSimulation.js`: Browser-native simulation engine and runtime selector.
+- `simulationWorker.js`: Background worker used when the browser supports it.
+- `backend/`: Optional Python reference implementation from the earlier API-backed version.
 - `schemas/`: JSON schemas for core data structures.
 - `showcase/`: Showcase styling and demo image slots.
 
-## Run Backend
-
-```bash
-pip install -r backend/requirements.txt
-uvicorn backend.app:app --reload
-```
-
 ## Use Frontend
 
-Open `index.html` to view the project introduction. Open `demo.html` to use the simulator.
+Recommended local flow:
 
-To run live combat simulation from the demo:
+1. Open `demo.html`
+2. Place at least one attacker and one defender
+3. Click `Run Simulation`
 
-1. Start the backend with `uvicorn backend.app:app --reload`
-2. Open `demo.html`
-3. Place at least one attacker and one defender
-4. Set the backend URL in the right sidebar and click `Run Simulation`
+No FastAPI server, API base URL, or environment configuration is required. The page runs the simulation locally in the browser and will use a background worker automatically when available.
 
-The frontend is static, so a deployed website still needs a separately hosted FastAPI backend URL for the live simulation button to work.
+## Static Hosting
+
+The demo is static-host friendly:
+
+- Opening `demo.html` directly from disk works without setup.
+- GitHub Pages works without custom build steps or runtime configuration.
+- Browsers that allow worker threads use `simulationWorker.js` to keep the UI responsive.
+- Browsers that block workers fall back to inline execution automatically.
 
 ## Next Steps
 

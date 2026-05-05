@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import List, Literal, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.combat_sim import (
@@ -20,13 +24,37 @@ ELO_FACTORS = {
     "mid": 0.75,
     "high": 1.0,
 }
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+LOCAL_DEV_ORIGINS = [
+    "null",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:4173",
+    "http://localhost:4173",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
 
 app = FastAPI(title="FPS Strat Simulator Backend")
 
+
+def get_allowed_origins() -> List[str]:
+    """Resolve CORS origins from env or fall back to local development hosts."""
+    configured = os.getenv("SIM_ALLOWED_ORIGINS", "").strip()
+    if not configured:
+        return LOCAL_DEV_ORIGINS
+    if configured == "*":
+        return ["*"]
+    return [origin.strip() for origin in configured.split(",") if origin.strip()]
+
+
+allowed_origins = get_allowed_origins()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -36,6 +64,7 @@ class PlayerIcon(BaseModel):
     """Serialized player token placed on the map."""
 
     id: str
+    display_name: Optional[str] = None
     x: float
     y: float
     side: Literal["attack", "defense"] = "attack"
@@ -79,6 +108,7 @@ def build_players(payload: SimRequest) -> List[Player]:
     return [
         Player(
             name=player.id,
+            display_name=player.display_name or player.id,
             x=player.x,
             y=player.y,
             elo_factor=elo_factor,
@@ -119,6 +149,33 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/", include_in_schema=False)
+def serve_index() -> FileResponse:
+    """Serve the project landing page from the same origin as the API."""
+    return FileResponse(PROJECT_ROOT / "index.html")
+
+
+@app.get("/index.html", include_in_schema=False)
+def serve_index_html() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "index.html")
+
+
+@app.get("/demo.html", include_in_schema=False)
+def serve_demo() -> FileResponse:
+    """Serve the simulator UI from the backend origin."""
+    return FileResponse(PROJECT_ROOT / "demo.html")
+
+
+@app.get("/styles.css", include_in_schema=False)
+def serve_styles() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "styles.css", media_type="text/css")
+
+
+@app.get("/visionEngine.js", include_in_schema=False)
+def serve_vision_engine() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "visionEngine.js", media_type="text/javascript")
+
+
 @app.post("/simulate")
 def simulate(payload: SimRequest) -> dict[str, object]:
     """Resolve the current board state into a live teamfight simulation."""
@@ -147,3 +204,7 @@ def simulate(payload: SimRequest) -> dict[str, object]:
         }
     )
     return result
+
+
+app.mount("/assets", StaticFiles(directory=PROJECT_ROOT / "assets"), name="assets")
+app.mount("/showcase", StaticFiles(directory=PROJECT_ROOT / "showcase"), name="showcase")

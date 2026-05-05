@@ -487,6 +487,65 @@ body[data-side="defense"] {
   gap: 6px;
 }
 
+.sim-service {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #111813;
+}
+
+.sim-service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sim-service-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid #2d382f;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sim-service-endpoint {
+  display: block;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sim-service-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sim-service-meta[data-tone="success"] {
+  color: #98f0c1;
+}
+
+.sim-service-meta[data-tone="error"] {
+  color: #ffb1aa;
+}
+
+.sim-service-meta[data-tone="loading"] {
+  color: #cfe4ff;
+}
+
 .field-split {
   display: grid;
   grid-template-columns: 1fr 88px;

@@ -181,19 +181,20 @@
         <div class="right-header">Live Simulation</div>
         <p class="sidebar-copy">
           Build the round on the map, then resolve the current attacker and
-          defender setup against the backend simulation service.
+          defender setup with the in-browser simulation engine.
         </p>
 
         <section class="sim-panel">
-          <div class="field-stack">
-            <label class="field-label" for="backend-url">Backend URL</label>
-            <input
-              class="field-input"
-              id="backend-url"
-              type="url"
-              value="http://127.0.0.1:8000"
-              spellcheck="false"
-            />
+          <div class="sim-service">
+            <div class="sim-service-row">
+              <div class="field-label">Simulation Runtime</div>
+              <span class="sim-service-chip" id="sim-service-chip">Loading</span>
+            </div>
+            <code class="sim-service-endpoint" id="sim-service-endpoint">runtime://initializing</code>
+            <p class="sim-service-meta" id="sim-service-meta">
+              The simulator runs entirely in your browser. No local server, API base URL,
+              or deployment config is required.
+            </p>
           </div>
 
           <div class="field-split">
@@ -310,6 +311,7 @@
     </div>
     <script type="module">
       import { VisionEngine } from "./visionEngine.js";
+      import { createSimulationRunner } from "./browserSimulation.js";
 
       const mapCanvas = document.getElementById("map-canvas");
       const mapWrapper = document.getElementById("map-wrapper");
@@ -330,7 +332,9 @@
       const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
       const toolButtons = document.querySelectorAll(".tool-btn");
       const visionSuboptions = document.querySelectorAll(".tool-suboption");
-      const backendUrlInput = document.getElementById("backend-url");
+      const simServiceChip = document.getElementById("sim-service-chip");
+      const simServiceEndpoint = document.getElementById("sim-service-endpoint");
+      const simServiceMeta = document.getElementById("sim-service-meta");
       const eloSelect = document.getElementById("elo-select");
       const maxSecondsInput = document.getElementById("max-seconds");
       const runSimButton = document.getElementById("run-sim-btn");
@@ -339,6 +343,7 @@
       const simEvents = document.getElementById("sim-events");
       const simBoardMeta = document.getElementById("sim-board-meta");
       const visionEngine = new VisionEngine();
+      const simulationRunner = createSimulationRunner();
 
       let activeToken = null;
       let dragOffsetX = 0;
@@ -565,7 +570,6 @@
           { name: "Dimensional Drift", type: "util-stun" },
         ],
       };
-      const BACKEND_URL_STORAGE_KEY = "fps-strat-sim-backend-url";
       const utilityRadii = {
         "util-flash": 22,
         "util-molly": 32,
@@ -575,13 +579,46 @@
         "util-trap": 28,
         "util-stun": 38,
       };
+      let agentInstanceCounter = 0;
+      const agentLabelCounters = {};
 
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
 
-      function getBackendBaseUrl() {
-        return backendUrlInput.value.trim().replace(/\/+$/, "");
+      function setSimulationServiceMeta(message, tone = "neutral") {
+        simServiceMeta.textContent = message;
+        simServiceMeta.dataset.tone = tone;
+      }
+
+      function refreshSimulationRuntimePanel() {
+        const runtime = simulationRunner.getRuntimeInfo();
+        simServiceChip.textContent = runtime.chip;
+        simServiceEndpoint.textContent = runtime.summary;
+        if (!simServiceMeta.textContent.trim()) {
+          setSimulationServiceMeta(runtime.detail);
+        }
+      }
+
+      async function warmupSimulationRuntime() {
+        const runtime = await simulationRunner.warmup();
+        simServiceChip.textContent = runtime.chip;
+        simServiceEndpoint.textContent = runtime.summary;
+        setSimulationServiceMeta(runtime.detail, "success");
+      }
+
+      function createRuntimeId(prefix) {
+        agentInstanceCounter += 1;
+        if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+          return `${prefix}-${crypto.randomUUID()}`;
+        }
+        return `${prefix}-${Date.now()}-${agentInstanceCounter}`;
+      }
+
+      function getNextAgentDisplayName(agentId, fallbackName) {
+        agentLabelCounters[agentId] = (agentLabelCounters[agentId] || 0) + 1;
+        const nextIndex = agentLabelCounters[agentId];
+        return nextIndex === 1 ? fallbackName : `${fallbackName} ${nextIndex}`;
       }
 
       function setSimulationStatus(message, tone = "neutral") {
@@ -612,6 +649,7 @@
           <div class="summary-meta">${winnerText}</div>
           <div class="summary-meta">Tick ${result.tick} on ${result.map} | ${result.elo.toUpperCase()} elo</div>
           <div class="summary-meta">${attackCount} attackers alive, ${defenseCount} defenders alive</div>
+          <div class="summary-meta">Runtime: ${(result.runtime?.mode || "inline").toUpperCase()} | ${result.runtime?.elapsed_ms ?? "?"} ms</div>
           <div class="summary-meta">Survivors: ${
             result.survivors?.length ? result.survivors.join(", ") : "none"
           }</div>
@@ -702,6 +740,7 @@
         utilityPopover.setAttribute("aria-hidden", "true");
         hideWeaponPopover();
         drawnStrokes.length = 0;
+        Object.keys(agentLabelCounters).forEach((key) => delete agentLabelCounters[key]);
         redrawDrawingLayer();
         visionLayer.innerHTML = "";
         mapWrapper
@@ -877,12 +916,16 @@
 
       function createAgentToken(icon) {
         const token = document.createElement("div");
+        const agentId = getAgentIdFromIcon(icon);
+        const displayName = getNextAgentDisplayName(agentId, icon.alt || "Agent");
         token.className = "map-agent-token";
         token.dataset.side = currentSide;
         token.dataset.weapon = "3";
-        token.dataset.agentId = getAgentIdFromIcon(icon);
+        token.dataset.agentId = agentId;
+        token.dataset.instanceId = createRuntimeId(agentId || "agent");
+        token.dataset.displayName = displayName;
         token.style.backgroundImage = `url("${icon.src}")`;
-        token.setAttribute("aria-label", icon.alt || "Agent");
+        token.setAttribute("aria-label", displayName);
         const badge = document.createElement("span");
         badge.className = "weapon-badge";
         badge.dataset.weapon = "3";
@@ -1092,7 +1135,8 @@
       function buildSimulationPayload() {
         const visionOrigins = Array.from(mapWrapper.querySelectorAll(".vision-origin"));
         const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map((token) => ({
-          id: token.getAttribute("aria-label") || "agent",
+          id: token.dataset.instanceId || createRuntimeId(token.dataset.agentId || "agent"),
+          display_name: token.dataset.displayName || token.getAttribute("aria-label") || "Agent",
           x: parseFloat(token.style.left),
           y: parseFloat(token.style.top),
           side: token.dataset.side || "attack",
@@ -1128,12 +1172,7 @@
         const payload = buildSimulationPayload();
         const attackCount = payload.players.filter((player) => player.side === "attack").length;
         const defenseCount = payload.players.filter((player) => player.side === "defense").length;
-        const baseUrl = getBackendBaseUrl();
-
-        if (!baseUrl) {
-          setSimulationStatus("Enter a backend URL before running the simulation.", "error");
-          return;
-        }
+        refreshSimulationRuntimePanel();
 
         if (!attackCount || !defenseCount) {
           setSimulationStatus(
@@ -1144,36 +1183,29 @@
         }
 
         runSimButton.disabled = true;
-        setSimulationStatus("Running simulation...", "loading");
+        setSimulationServiceMeta(
+          "Running the local simulation engine. The page stays self-contained and offline-friendly.",
+          "loading"
+        );
+        setSimulationStatus("Running local simulation...", "loading");
         simEvents.innerHTML = "";
 
         try {
-          const response = await fetch(`${baseUrl}/simulate`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          });
-
-          if (!response.ok) {
-            let message = `Simulation request failed with status ${response.status}.`;
-            try {
-              const errorPayload = await response.json();
-              if (errorPayload.detail) message = errorPayload.detail;
-            } catch (error) {
-              // Keep the HTTP status message when the body is not JSON.
-            }
-            throw new Error(message);
-          }
-
-          const result = await response.json();
+          const result = await simulationRunner.run(payload);
           renderSimulationResult(result);
+          refreshSimulationRuntimePanel();
+          setSimulationServiceMeta(
+            `Simulation finished locally in ${result.runtime?.elapsed_ms ?? "?"} ms with the ${result.runtime?.mode || "inline"} runtime.`,
+            "success"
+          );
           setSimulationStatus("Simulation complete.", "success");
-          localStorage.setItem(BACKEND_URL_STORAGE_KEY, baseUrl);
         } catch (error) {
+          setSimulationServiceMeta(
+            "Local simulation failed unexpectedly. Refresh the page if the issue persists.",
+            "error"
+          );
           simSummary.textContent =
-            "The demo could not reach the backend. Start the FastAPI service and confirm the URL above.";
+            "The in-browser simulation could not finish. No server is required, so this failure happened inside the page runtime.";
           simEvents.innerHTML = "";
           setSimulationStatus(error.message || "Simulation failed.", "error");
         } finally {
@@ -1195,10 +1227,6 @@
         btn.addEventListener("click", () => setSide(btn.dataset.side));
       });
 
-      backendUrlInput.addEventListener("change", () => {
-        backendUrlInput.value = getBackendBaseUrl();
-        localStorage.setItem(BACKEND_URL_STORAGE_KEY, backendUrlInput.value);
-      });
       runSimButton.addEventListener("click", runSimulation);
 
       toolButtons.forEach((button) => {
@@ -1449,16 +1477,16 @@
       setCurrentTool(currentTool);
       setVisionConeSize(currentVisionCone);
       renderMapOptions();
-      backendUrlInput.value =
-        localStorage.getItem(BACKEND_URL_STORAGE_KEY) || backendUrlInput.value;
+      refreshSimulationRuntimePanel();
       applyMapTransform();
       setLayerSizes();
       updateBoardMeta();
-      setSimulationStatus("Waiting for a board state.");
+      setSimulationStatus("Ready for local simulation.");
+      warmupSimulationRuntime();
       window.addEventListener("resize", setLayerSizes);
       mapImage.addEventListener("load", initializeVisionMap);
 
-      // Expose the payload builder for debugging and backend verification.
+      // Expose the payload builder for debugging and local simulation inspection.
       window.buildSimulationPayload = buildSimulationPayload;
       window.runSimulation = runSimulation;
     </script>

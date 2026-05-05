@@ -50,6 +50,7 @@ class Player:
     """Player state used for combat power evaluation."""
 
     name: str
+    display_name: str
     x: float
     y: float
     elo_factor: float
@@ -68,6 +69,11 @@ class Utility:
     y: float
     radius: float
     side: Literal["attack", "defense"]
+
+
+def get_player_label(player: Player) -> str:
+    """Return the UI-facing label for a player while keeping IDs internal."""
+    return player.display_name or player.name
 
 
 def normalize_utility_type(raw_type: str) -> Optional[UtilityType]:
@@ -214,8 +220,8 @@ def simulate_duel(
 
         if roll1 and roll2:
             timeline.append(
-                f"Tick {tick}: {player1.name} generated {c1:.2f} Power. "
-                f"{player2.name} generated {c2:.2f} Power. Trade kill."
+                f"Tick {tick}: {get_player_label(player1)} generated {c1:.2f} Power. "
+                f"{get_player_label(player2)} generated {c2:.2f} Power. Trade kill."
             )
             return {
                 "result": "trade",
@@ -225,31 +231,31 @@ def simulate_duel(
 
         if roll1:
             timeline.append(
-                f"Tick {tick}: {player1.name} generated {c1:.2f} Power. "
-                f"{player2.name} generated {c2:.2f} Power. "
-                f"{player1.name} killed {player2.name}."
+                f"Tick {tick}: {get_player_label(player1)} generated {c1:.2f} Power. "
+                f"{get_player_label(player2)} generated {c2:.2f} Power. "
+                f"{get_player_label(player1)} killed {get_player_label(player2)}."
             )
             return {
-                "result": f"{player1.name} wins",
+                "result": f"{get_player_label(player1)} wins",
                 "tick": tick,
                 "timeline": timeline,
             }
 
         if roll2:
             timeline.append(
-                f"Tick {tick}: {player1.name} generated {c1:.2f} Power. "
-                f"{player2.name} generated {c2:.2f} Power. "
-                f"{player2.name} killed {player1.name}."
+                f"Tick {tick}: {get_player_label(player1)} generated {c1:.2f} Power. "
+                f"{get_player_label(player2)} generated {c2:.2f} Power. "
+                f"{get_player_label(player2)} killed {get_player_label(player1)}."
             )
             return {
-                "result": f"{player2.name} wins",
+                "result": f"{get_player_label(player2)} wins",
                 "tick": tick,
                 "timeline": timeline,
             }
 
         timeline.append(
-            f"Tick {tick}: {player1.name} generated {c1:.2f} Power. "
-            f"{player2.name} generated {c2:.2f} Power. No kill."
+            f"Tick {tick}: {get_player_label(player1)} generated {c1:.2f} Power. "
+            f"{get_player_label(player2)} generated {c2:.2f} Power. No kill."
         )
 
     return {
@@ -298,6 +304,7 @@ def simulate_teamfight(
     roster = [
         Player(
             name=player.name,
+            display_name=player.display_name,
             x=player.x,
             y=player.y,
             elo_factor=player.elo_factor,
@@ -323,7 +330,7 @@ def simulate_teamfight(
                 "winner_side": winner_side,
                 "tick": tick - 1,
                 "events": events,
-                "survivors": [player.name for player in living_players],
+                "survivors": [get_player_label(player) for player in living_players],
                 "side_counts": {
                     "attack": len(attacks_alive),
                     "defense": len(defenses_alive),
@@ -365,14 +372,14 @@ def simulate_teamfight(
                     {
                         "tick": tick,
                         "type": "trade",
-                        "actor": attacker.name,
-                        "target": defender.name,
+                        "actor": get_player_label(attacker),
+                        "target": get_player_label(defender),
                         "power": {
                             "attack": round(attack_power, 2),
                             "defense": round(defense_power, 2),
                         },
                         "event": (
-                            f"Tick {tick}: {attacker.name} and {defender.name} trade "
+                            f"Tick {tick}: {get_player_label(attacker)} and {get_player_label(defender)} trade "
                             f"({attack_power:.2f} vs {defense_power:.2f} power)."
                         ),
                     }
@@ -383,14 +390,14 @@ def simulate_teamfight(
                     {
                         "tick": tick,
                         "type": "kill",
-                        "actor": attacker.name,
-                        "target": defender.name,
+                        "actor": get_player_label(attacker),
+                        "target": get_player_label(defender),
                         "power": {
                             "attack": round(attack_power, 2),
                             "defense": round(defense_power, 2),
                         },
                         "event": (
-                            f"Tick {tick}: {attacker.name} eliminates {defender.name} "
+                            f"Tick {tick}: {get_player_label(attacker)} eliminates {get_player_label(defender)} "
                             f"({attack_power:.2f} vs {defense_power:.2f} power)."
                         ),
                     }
@@ -401,14 +408,14 @@ def simulate_teamfight(
                     {
                         "tick": tick,
                         "type": "kill",
-                        "actor": defender.name,
-                        "target": attacker.name,
+                        "actor": get_player_label(defender),
+                        "target": get_player_label(attacker),
                         "power": {
                             "attack": round(attack_power, 2),
                             "defense": round(defense_power, 2),
                         },
                         "event": (
-                            f"Tick {tick}: {defender.name} eliminates {attacker.name} "
+                            f"Tick {tick}: {get_player_label(defender)} eliminates {get_player_label(attacker)} "
                             f"({defense_power:.2f} vs {attack_power:.2f} power)."
                         ),
                     }
@@ -431,7 +438,7 @@ def simulate_teamfight(
         "winner_side": winner_side,
         "tick": total_ticks,
         "events": events,
-        "survivors": [player.name for player in living_players],
+        "survivors": [get_player_label(player) for player in living_players],
         "side_counts": {
             "attack": len(attacks_alive),
             "defense": len(defenses_alive),
@@ -443,6 +450,7 @@ if __name__ == "__main__":
     # Example usage: run a local duel simulation and print the JSON result.
     p1 = Player(
         name="Player 1",
+        display_name="Player 1",
         x=10.0,
         y=15.0,
         elo_factor=1.0,
@@ -453,6 +461,7 @@ if __name__ == "__main__":
     )
     p2 = Player(
         name="Player 2",
+        display_name="Player 2",
         x=30.0,
         y=20.0,
         elo_factor=0.2,
