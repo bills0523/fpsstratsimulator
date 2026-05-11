@@ -58,6 +58,8 @@ class Player:
     distance_to_target: float
     angle_state: AngleState
     side: Literal["attack", "defense"]
+    vision_supported: bool = False
+    revealed_to_enemy: bool = False
 
 
 @dataclass
@@ -171,9 +173,8 @@ def calculate_combat_power(
     weapon_mod = get_weapon_modifier(player.weapon_category, distance_m)
     angle_mod = get_angle_modifier(player.angle_state, player.elo_factor, player.side)
 
-    # If opponent is in recon, nullify their angle advantage.
-    if "util-recon" in opponent_intersections:
-        angle_mod = 1.0
+    if "util-recon" in player_intersections or player.revealed_to_enemy:
+        angle_mod = min(angle_mod, 1.0)
 
     utility_mod = get_utility_modifier(player_intersections, player.elo_factor)
 
@@ -181,7 +182,7 @@ def calculate_combat_power(
 
     if "util-molly" in opponent_intersections:
         power *= 1.25
-    if "util-recon" in opponent_intersections:
+    if "util-recon" in opponent_intersections or opponent.revealed_to_enemy:
         power *= 1.15
 
     return power
@@ -312,6 +313,8 @@ def simulate_teamfight(
             distance_to_target=player.distance_to_target,
             angle_state=player.angle_state,
             side=player.side,
+            vision_supported=player.vision_supported,
+            revealed_to_enemy=player.revealed_to_enemy,
         )
         for player in players
     ]
@@ -458,6 +461,8 @@ if __name__ == "__main__":
         distance_to_target=25.0,
         angle_state="holding_45",
         side="attack",
+        vision_supported=False,
+        revealed_to_enemy=False,
     )
     p2 = Player(
         name="Player 2",
@@ -469,6 +474,8 @@ if __name__ == "__main__":
         distance_to_target=25.0,
         angle_state="peeking_90",
         side="defense",
+        vision_supported=False,
+        revealed_to_enemy=False,
     )
     utils = [
         Utility(type="util-recon", x=20.0, y=18.0, radius=8.0, side="attack"),

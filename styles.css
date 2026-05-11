@@ -606,6 +606,38 @@ body[data-side="defense"] {
   border-color: rgba(150, 190, 255, 0.35);
 }
 
+.app-toast {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translate(-50%, -12px);
+  min-width: 260px;
+  max-width: min(420px, calc(100vw - 24px));
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #6a2c34;
+  background: rgba(44, 18, 22, 0.94);
+  color: #ffd8dc;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  z-index: 120;
+}
+
+.app-toast.active {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.app-toast[data-tone="success"] {
+  border-color: #1f6b45;
+  background: rgba(14, 45, 31, 0.94);
+  color: #cbffe0;
+}
+
 .sim-summary {
   border: 1px solid var(--border);
   border-radius: 8px;

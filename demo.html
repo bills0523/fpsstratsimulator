@@ -31,8 +31,8 @@
               <div class="map-dropdown" id="map-dropdown"></div>
             </div>
             <div class="map-toggle">
-              <button class="toggle active">Attack</button>
-              <button class="toggle">Defend</button>
+              <button class="toggle">Attack</button>
+              <button class="toggle active">Defend</button>
             </div>
           </div>
         </section>
@@ -294,6 +294,7 @@
     </div>
     <!-- Hover popover for agent utilities (positioned via JS). -->
     <div class="utility-popover" id="utility-popover" aria-hidden="true"></div>
+    <div class="app-toast" id="app-toast" aria-live="polite" aria-hidden="true"></div>
     <!-- Context menu for selecting weapons on agent tokens. -->
     <div class="weapon-popover" id="weapon-popover" aria-hidden="true">
       <button class="weapon-option" data-weapon="1" title="Pistol">
@@ -330,6 +331,7 @@
       const sideToggles = document.querySelectorAll(".map-toggle .toggle");
       const weaponPopover = document.getElementById("weapon-popover");
       const weaponOptions = weaponPopover.querySelectorAll(".weapon-option");
+      const appToast = document.getElementById("app-toast");
       const toolButtons = document.querySelectorAll(".tool-btn");
       const visionSuboptions = document.querySelectorAll(".tool-suboption");
       const simServiceChip = document.getElementById("sim-service-chip");
@@ -350,9 +352,10 @@
       let dragOffsetY = 0;
       let activeRotationCone = null;
       let popoverHideTimer = null;
+      let toastHideTimer = null;
       let activeAgentId = null;
       let activeWeaponToken = null;
-      let currentSide = "attack";
+      let currentSide = "defense";
       let currentTool = "cursor";
       let currentVisionCone = "small";
       let currentMap = "Bind";
@@ -579,6 +582,7 @@
         "util-trap": 28,
         "util-stun": 38,
       };
+      const visionSupportRadius = 96;
       let agentInstanceCounter = 0;
       const agentLabelCounters = {};
 
@@ -624,6 +628,25 @@
       function setSimulationStatus(message, tone = "neutral") {
         simStatus.textContent = message;
         simStatus.dataset.tone = tone;
+      }
+
+      function showToast(message, tone = "error") {
+        if (!appToast) return;
+        appToast.textContent = message;
+        appToast.dataset.tone = tone;
+        appToast.classList.add("active");
+        appToast.setAttribute("aria-hidden", "false");
+        if (toastHideTimer) clearTimeout(toastHideTimer);
+        toastHideTimer = setTimeout(() => {
+          appToast.classList.remove("active");
+          appToast.setAttribute("aria-hidden", "true");
+        }, 2400);
+      }
+
+      function getAgentCountForSide(side) {
+        return Array.from(mapWrapper.querySelectorAll(".map-agent-token")).filter(
+          (token) => token.dataset.side === side
+        ).length;
       }
 
       function updateBoardMeta() {
@@ -672,18 +695,100 @@
           .join("");
       }
 
-      function inferAngleStateForToken(token, visionOrigins) {
-        const tokenX = parseFloat(token.style.left);
-        const tokenY = parseFloat(token.style.top);
-        const side = token.dataset.side || "attack";
-        const supportedVision = visionOrigins.some((origin) => {
-          if ((origin.dataset.side || "attack") !== side) return false;
-          const dx = tokenX - parseFloat(origin.style.left);
-          const dy = tokenY - parseFloat(origin.style.top);
-          return Math.hypot(dx, dy) <= 96;
+      function isFinitePoint(point) {
+        return Number.isFinite(point?.x) && Number.isFinite(point?.y);
+      }
+
+      function isPointInsidePolygon(point, polygon) {
+        if (!isFinitePoint(point) || !Array.isArray(polygon) || polygon.length < 3) {
+          return false;
+        }
+
+        let inside = false;
+        for (let index = 0, prevIndex = polygon.length - 1; index < polygon.length; prevIndex = index, index += 1) {
+          const current = polygon[index];
+          const previous = polygon[prevIndex];
+          const intersects =
+            (current.y > point.y) !== (previous.y > point.y) &&
+            point.x <
+              ((previous.x - current.x) * (point.y - current.y)) /
+                ((previous.y - current.y) || Number.EPSILON) +
+                current.x;
+          if (intersects) inside = !inside;
+        }
+
+        return inside;
+      }
+
+      function buildVisionSources() {
+        return Array.from(mapWrapper.querySelectorAll(".vision-origin"))
+          .map((emitter, index) => {
+            const x = parseFloat(emitter.style.left);
+            const y = parseFloat(emitter.style.top);
+            const angle = parseFloat(emitter.dataset.angle || "0");
+            const coneType = emitter.dataset.cone || "medium";
+            const preset = conePresets[coneType] || conePresets.medium;
+            const coverage = [
+              { x, y },
+              ...visionEngine.calculateCone(x, y, angle, coneType),
+            ].filter(isFinitePoint);
+
+            return {
+              id: emitter.dataset.instanceId || `vision_${index}`,
+              side: emitter.dataset.side || "attack",
+              x,
+              y,
+              angle,
+              cone_type: coneType,
+              support_radius: visionSupportRadius,
+              range: preset.range,
+              spread: preset.spread,
+              coverage,
+            };
+          })
+          .filter((source) => source.coverage.length >= 3);
+      }
+
+      function findNearestOpponent(player, players) {
+        let nearest = null;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        players.forEach((candidate) => {
+          if (candidate.side === player.side) return;
+          const distance = Math.hypot(candidate.x - player.x, candidate.y - player.y);
+          if (distance < nearestDistance) {
+            nearest = candidate;
+            nearestDistance = distance;
+          }
         });
-        if (!supportedVision) return "neutral";
-        return side === "attack" ? "peeking_90" : "holding_45";
+
+        return nearest;
+      }
+
+      function deriveVisionContextForPlayer(player, players, visionSources) {
+        const nearestOpponent = findNearestOpponent(player, players);
+        const friendlySource = visionSources.find((source) => {
+          if (source.side !== player.side) return false;
+          const supportDistance = Math.hypot(source.x - player.x, source.y - player.y);
+          if (supportDistance > source.support_radius) return false;
+          if (!nearestOpponent) return false;
+          return isPointInsidePolygon(nearestOpponent, source.coverage);
+        });
+        const revealedByEnemy = visionSources.some(
+          (source) => source.side !== player.side && isPointInsidePolygon(player, source.coverage)
+        );
+
+        return {
+          angle_state: friendlySource
+            ? player.side === "attack"
+              ? "peeking_90"
+              : "holding_45"
+            : "neutral",
+          supported_by_friendly: Boolean(friendlySource),
+          revealed_to_enemy: revealedByEnemy,
+          source_id: friendlySource?.id || null,
+          cone_type: friendlySource?.cone_type || null,
+        };
       }
 
       function applyMapTransform() {
@@ -915,6 +1020,13 @@
       }
 
       function createAgentToken(icon) {
+        if (getAgentCountForSide(currentSide) >= 5) {
+          showToast(
+            `You can only place 5 ${currentSide === "attack" ? "attackers" : "defenders"}.`
+          );
+          return;
+        }
+
         const token = document.createElement("div");
         const agentId = getAgentIdFromIcon(icon);
         const displayName = getNextAgentDisplayName(agentId, icon.alt || "Agent");
@@ -1014,6 +1126,7 @@
         emitter.dataset.side = currentSide;
         emitter.dataset.cone = currentVisionCone;
         emitter.dataset.angle = "0";
+        emitter.dataset.instanceId = createRuntimeId("vision");
         emitter.style.left = `${x}px`;
         emitter.style.top = `${y}px`;
         const handle = document.createElement("button");
@@ -1133,7 +1246,6 @@
       }
 
       function buildSimulationPayload() {
-        const visionOrigins = Array.from(mapWrapper.querySelectorAll(".vision-origin"));
         const players = Array.from(mapWrapper.querySelectorAll(".map-agent-token")).map((token) => ({
           id: token.dataset.instanceId || createRuntimeId(token.dataset.agentId || "agent"),
           display_name: token.dataset.displayName || token.getAttribute("aria-label") || "Agent",
@@ -1141,7 +1253,12 @@
           y: parseFloat(token.style.top),
           side: token.dataset.side || "attack",
           weapon_category: parseInt(token.dataset.weapon || "3", 10),
-          angle_state: inferAngleStateForToken(token, visionOrigins),
+          angle_state: "neutral",
+        }));
+        const visionSources = buildVisionSources();
+        const playersWithVision = players.map((player) => ({
+          ...player,
+          vision_context: deriveVisionContextForPlayer(player, players, visionSources),
         }));
 
         const utilities = Array.from(mapWrapper.querySelectorAll(".map-utility")).map(
@@ -1161,8 +1278,9 @@
         return {
           map: currentMap,
           created_at: new Date().toISOString(),
-          players,
+          players: playersWithVision,
           utilities,
+          vision_sources: visionSources,
           elo: eloSelect.value,
           max_seconds: parseInt(maxSecondsInput.value || "18", 10),
         };

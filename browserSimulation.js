@@ -66,7 +66,30 @@ function getDefaultUtilityRadius(utilityType) {
   return DEFAULT_UTILITY_RADII[utilityType];
 }
 
+function normalizeVisionContext(rawVision) {
+  if (!rawVision || typeof rawVision !== "object") {
+    return {
+      angleState: null,
+      supportedByFriendly: false,
+      revealedToEnemy: false,
+      sourceId: null,
+      coneType: null,
+    };
+  }
+
+  return {
+    angleState: ANGLE_STATES.has(rawVision.angle_state) ? rawVision.angle_state : null,
+    supportedByFriendly: Boolean(rawVision.supported_by_friendly),
+    revealedToEnemy: Boolean(rawVision.revealed_to_enemy),
+    sourceId: rawVision.source_id || null,
+    coneType: rawVision.cone_type || null,
+  };
+}
+
 function resolveAngleState(player) {
+  if (ANGLE_STATES.has(player.vision_context?.angle_state)) {
+    return player.vision_context.angle_state;
+  }
   if (ANGLE_STATES.has(player.angle_state)) {
     return player.angle_state;
   }
@@ -85,6 +108,7 @@ function buildPlayers(payload) {
     distanceToTarget: 0,
     angleState: resolveAngleState(player),
     side: player.side,
+    vision: normalizeVisionContext(player.vision_context),
   }));
 }
 
@@ -174,8 +198,8 @@ function calculateCombatPower(player, opponent, activeUtilities) {
   const weaponModifier = getWeaponModifier(player.weaponCategory, distanceMeters);
   let angleModifier = getAngleModifier(player.angleState, player.eloFactor, player.side);
 
-  if (opponentIntersections.includes("util-recon")) {
-    angleModifier = 1.0;
+  if (playerIntersections.includes("util-recon") || player.vision.revealedToEnemy) {
+    angleModifier = Math.min(angleModifier, 1.0);
   }
 
   const utilityModifier = getUtilityModifier(playerIntersections, player.eloFactor);
@@ -184,7 +208,7 @@ function calculateCombatPower(player, opponent, activeUtilities) {
   if (opponentIntersections.includes("util-molly")) {
     power *= 1.25;
   }
-  if (opponentIntersections.includes("util-recon")) {
+  if (opponentIntersections.includes("util-recon") || opponent.vision.revealedToEnemy) {
     power *= 1.15;
   }
 
