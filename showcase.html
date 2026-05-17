@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FPS Strat Simulator Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="showcase/project-showcase.css" />
+  </head>
+  <body>
+    <main class="showcase-page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Tactical Strategy Sandbox</p>
+          <h1>Plan, place, test, and visualize a full round before it happens.</h1>
+          <p class="hero-text">
+            FPS Strat Simulator is a 2D planning workspace for tactical shooter rounds.
+            It combines map control, placement tools, vision modeling, and combat
+            simulation in one surface.
+          </p>
+          <div class="hero-points">
+            <span>Simulation Engine</span>
+            <span>Interactive Maps</span>
+            <span>Agent Loadouts</span>
+            <span>Drawing + Planning Tools</span>
+            <span>Dynamic Vision Cones</span>
+          </div>
+          <div class="hero-actions">
+            <a class="hero-link" href="index.html">Open Live Demo</a>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-chip">Project Scope</div>
+          <ul class="panel-list">
+            <li>Map navigation with pan and zoom</li>
+            <li>Agent placement with weapon assignment</li>
+            <li>Utility placement and tactical markup tools</li>
+            <li>Image-derived vision collision engine</li>
+            <li>Probabilistic in-browser combat simulation</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="intro-grid">
+        <article class="info-card">
+          <h2>The Simulation</h2>
+          <p>
+            The browser resolves combat with a tick-based model. Weapon type,
+            position, side, and utility state all shape combat power.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Map Design</h2>
+          <p>
+            Multiple maps can be swapped from the dropdown. Each switch resets placed
+            objects, drawings, and vision state.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Agent Placement</h2>
+          <p>
+            Agents drop onto the board with weapons, sides, and utilities to model
+            setups, site hits, and spacing.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Tooling</h2>
+          <p>
+            Pen, eraser, text, spike, ping, and vision tools turn the map into a live
+            planning canvas.
+          </p>
+        </article>
+      </section>
+
+      <section class="demo-section">
+        <div class="section-heading">
+          <p class="eyebrow">Feature Breakdown</p>
+          <h2>From planning surface to complete tactical execution.</h2>
+          <p>
+            Each system is built to turn a rough idea into a clear, executable round
+            plan.
+          </p>
+        </div>
+
+        <div class="demo-stack">
+          <article class="demo-card demo-card-wide">
+            <div class="demo-copy">
+              <p class="demo-tag">The Final Output</p>
+              <h3>A complete strategy layout ready for team execution.</h3>
+              <p>
+                The end result is a fully designed strat board: agents, tools,
+                utility timing, vision, and callouts organized into one readable plan
+                for cleaner, more confident rounds.
+              </p>
+              <code>showcase/demo/Full-designed-strat.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/Full-designed-strat.png"
+                alt="Completed strategy layout demonstration"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Map Selection</p>
+              <h3>Switch between the supported tactical battlegrounds.</h3>
+              <p>
+                The current map roster includes Bind, Breeze, Fracture, Lotus, Haven,
+                and Pearl. Selecting a new map resets the workspace so each strategy
+                starts from a clean layout.
+              </p>
+              <code>showcase/demo/map-selection.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/map-selection.png"
+                alt="Map selection interface showing available maps"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Agent Placement</p>
+              <h3>Build setups with precise drag-and-drop positioning.</h3>
+              <p>
+                Agent tokens can be picked up, moved, and placed anywhere on the map.
+                The interaction is direct and lightweight, making it easy to test
+                spacing, defaults, site hits, and retake positions.
+              </p>
+              <code>showcase/demo/setting-agents.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/setting-agents.png"
+                alt="Agent tokens being placed on the tactical map"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Tactical Toolkit</p>
+              <h3>Mark, explain, and refine every layer of the plan.</h3>
+              <p>
+                The toolset includes a drawing pen, stroke eraser, plant spike, text
+                boxes, dynamic vision cones, map pings, and a selection cursor for
+                repositioning objects.
+              </p>
+              <code>showcase/demo/tools.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/tools.png"
+                alt="Tactical toolkit controls for drawing, pings, text, spike, and vision"
+              />
+            </figure>
+          </article>
+
+          <article class="demo-card">
+            <div class="demo-copy">
+              <p class="demo-tag">Weapon Loadouts & Simulation Engine</p>
+              <h3>Weapon choices feed directly into combat calculations.</h3>
+              <p>
+                Agents can equip Pistols, SMGs, Shotguns, or Rifles. These choices are
+                not cosmetic: the simulation engine uses weapon class, range, and
+                angle state to calculate combat advantages.
+              </p>
+              <code>showcase/demo/weapon-choosing.png</code>
+            </div>
+            <figure class="demo-frame">
+              <img
+                src="showcase/demo/weapon-choosing.png"
+                alt="Contextual weapon selection for agent loadouts"
+              />
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="footer-banner">
+        <p class="eyebrow">Project Summary</p>
+        <h2>
+          A tactical planning surface for maps, agents, utilities, and live vision.
+        </h2>
+      </section>
+    </main>
+  </body>
+</html>

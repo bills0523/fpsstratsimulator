@@ -13,8 +13,7 @@ PIXELS_PER_METER = 10.0
 DEFAULT_UTILITY_RADII = {
     "util-flash": 22.0,
     "util-molly": 32.0,
-    "util-sphere": 34.0,
-    "util-line": 46.0,
+    "util-cover": 34.0,
     "util-recon": 52.0,
     "util-trap": 28.0,
     "util-stun": 38.0,
@@ -23,10 +22,12 @@ UTILITY_TYPE_ALIASES = {
     "blind": "util-flash",
     "flash": "util-flash",
     "molly": "util-molly",
-    "smoke": "util-sphere",
-    "sphere": "util-sphere",
-    "wall": "util-line",
-    "line": "util-line",
+    "smoke": "util-cover",
+    "sphere": "util-cover",
+    "wall": "util-cover",
+    "line": "util-cover",
+    "util-sphere": "util-cover",
+    "util-line": "util-cover",
     "reveal": "util-recon",
     "recon": "util-recon",
     "trap": "util-trap",
@@ -37,8 +38,7 @@ AngleState = Literal["holding_45", "peeking_90", "neutral"]
 UtilityType = Literal[
     "util-flash",
     "util-molly",
-    "util-sphere",
-    "util-line",
+    "util-cover",
     "util-recon",
     "util-trap",
     "util-stun",
@@ -98,7 +98,7 @@ def check_utility_intersection(player: Player, utilities: List[Utility]) -> List
     for util in utilities:
         distance = hypot(player.x - util.x, player.y - util.y)
         if distance <= util.radius:
-            if util.type in ("util-sphere", "util-line"):
+            if util.type == "util-cover":
                 intersecting.append(util.type)
             elif util.side != player.side:
                 intersecting.append(util.type)
@@ -154,8 +154,8 @@ def get_utility_modifier(
         return 0.15 + (elo_factor * 0.10)
     if "util-trap" in intersecting_types:
         return 0.6
-    if "util-sphere" in intersecting_types or "util-line" in intersecting_types:
-        return 0.25 if enemy_has_los else 1.5
+    if "util-cover" in intersecting_types:
+        return 0.25
     return 1.0
 
 

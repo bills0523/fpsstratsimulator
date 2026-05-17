@@ -171,7 +171,7 @@ def health() -> dict[str, str]:
 
 @app.get("/", include_in_schema=False)
 def serve_index() -> FileResponse:
-    """Serve the project landing page from the same origin as the API."""
+    """Serve the simulator UI from the same origin as the API."""
     return serve_frontend_file("index.html")
 
 
@@ -180,10 +180,10 @@ def serve_index_html() -> FileResponse:
     return serve_frontend_file("index.html")
 
 
-@app.get("/demo.html", include_in_schema=False)
-def serve_demo() -> FileResponse:
-    """Serve the simulator UI from the backend origin."""
-    return serve_frontend_file("demo.html")
+@app.get("/showcase.html", include_in_schema=False)
+def serve_showcase() -> FileResponse:
+    """Serve the project showcase from the backend origin."""
+    return serve_frontend_file("showcase.html")
 
 
 @app.get("/styles.css", include_in_schema=False)
@@ -198,7 +198,7 @@ def serve_vision_engine() -> FileResponse:
 
 @app.get("/browserSimulation.js", include_in_schema=False)
 def serve_browser_simulation() -> FileResponse:
-    """Serve the browser-native simulation module used by demo.html."""
+    """Serve the browser-native simulation module used by index.html."""
     return serve_frontend_file("browserSimulation.js", media_type="text/javascript")
 
 

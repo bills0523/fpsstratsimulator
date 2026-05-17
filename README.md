@@ -10,8 +10,8 @@ A web-based 2D Valorant strategy simulator prototype. Current progress includes:
 
 ## Project Structure
 
-- `index.html`: One-page project showcase and introduction.
-- `demo.html`: Frontend simulator UI and canvas playback logic.
+- `index.html`: Frontend simulator UI and canvas playback logic.
+- `showcase.html`: One-page project showcase and introduction.
 - `browserSimulation.js`: Browser-native simulation engine and runtime selector.
 - `simulationWorker.js`: Background worker used when the browser supports it.
 - `backend/`: Optional Python reference implementation from the earlier API-backed version.
@@ -22,7 +22,7 @@ A web-based 2D Valorant strategy simulator prototype. Current progress includes:
 
 Recommended local flow:
 
-1. Open `demo.html`
+1. Open `index.html`
 2. Place at least one attacker and one defender
 3. Click `Run Simulation`
 
@@ -32,7 +32,7 @@ No FastAPI server, API base URL, or environment configuration is required. The p
 
 The demo is static-host friendly:
 
-- Opening `demo.html` directly from disk works without setup.
+- Opening `index.html` directly from disk works without setup.
 - GitHub Pages works without custom build steps or runtime configuration.
 - Browsers that allow worker threads use `simulationWorker.js` to keep the UI responsive.
 - Browsers that block workers fall back to inline execution automatically.

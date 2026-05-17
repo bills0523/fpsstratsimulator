@@ -4,8 +4,7 @@ const PIXELS_PER_METER = 10.0;
 const DEFAULT_UTILITY_RADII = {
   "util-flash": 22.0,
   "util-molly": 32.0,
-  "util-sphere": 34.0,
-  "util-line": 46.0,
+  "util-cover": 34.0,
   "util-recon": 52.0,
   "util-trap": 28.0,
   "util-stun": 38.0,
@@ -14,10 +13,12 @@ const UTILITY_TYPE_ALIASES = {
   blind: "util-flash",
   flash: "util-flash",
   molly: "util-molly",
-  smoke: "util-sphere",
-  sphere: "util-sphere",
-  wall: "util-line",
-  line: "util-line",
+  smoke: "util-cover",
+  sphere: "util-cover",
+  wall: "util-cover",
+  line: "util-cover",
+  "util-sphere": "util-cover",
+  "util-line": "util-cover",
   reveal: "util-recon",
   recon: "util-recon",
   trap: "util-trap",
@@ -137,7 +138,7 @@ function checkUtilityIntersection(player, utilities) {
   for (const utility of utilities) {
     const distance = Math.hypot(player.x - utility.x, player.y - utility.y);
     if (distance > utility.radius) continue;
-    if (utility.type === "util-sphere" || utility.type === "util-line") {
+    if (utility.type === "util-cover") {
       intersecting.push(utility.type);
     } else if (utility.side !== player.side) {
       intersecting.push(utility.type);
@@ -181,12 +182,7 @@ function getUtilityModifier(intersectingTypes, eloFactor, enemyHasLos = true) {
   if (intersectingTypes.includes("util-flash")) return 0.0;
   if (intersectingTypes.includes("util-stun")) return 0.15 + eloFactor * 0.1;
   if (intersectingTypes.includes("util-trap")) return 0.6;
-  if (
-    intersectingTypes.includes("util-sphere") ||
-    intersectingTypes.includes("util-line")
-  ) {
-    return enemyHasLos ? 0.25 : 1.5;
-  }
+  if (intersectingTypes.includes("util-cover")) return 0.25;
   return 1.0;
 }
 
